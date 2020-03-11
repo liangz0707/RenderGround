@@ -133,10 +133,10 @@ void VulkanCommandBuffer::transitionImageLayout(VkImage image, VkFormat format, 
 
 	VkImageMemoryBarrier barrier = {};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	// Èç¹û²»ÔÚÒâÔ­Ê¼ÄÚÈÝ¿ÉÒÔÊ¹ÓÃVK_IMAGE_LAYOUT_UNDEFINED 
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô­Ê¼ï¿½ï¿½ï¿½Ý¿ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½VK_IMAGE_LAYOUT_UNDEFINED 
 	barrier.oldLayout = oldLayout;
 	barrier.newLayout = newLayout;
-	// ÕâÀï±ØÐë±»ÉèÖÃ£¬Ã»ÓÐÄ¬ÈÏÖµ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë±»ï¿½ï¿½ï¿½Ã£ï¿½Ã»ï¿½ï¿½Ä¬ï¿½ï¿½Öµ
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
@@ -158,17 +158,17 @@ void VulkanCommandBuffer::transitionImageLayout(VkImage image, VkFormat format, 
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
-	// ÓÃÓÚÍ¬²½
+	// ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½
 
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;
 
 	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-		barrier.srcAccessMask = 0; //²»¿É·ÃÎÊ
+		barrier.srcAccessMask = 0; //ï¿½ï¿½ï¿½É·ï¿½ï¿½ï¿½
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
-		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT; // ÔÚÕâÖ®ºó¿ªÊ¼
-		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT; // ÔÚÕâÖ®Ç°½áÊø£¬Ö¸¶¨²Ù×÷ÐèÒªµÈ´ý
+		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT; // ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½Ê¼
+		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT; // ï¿½ï¿½ï¿½ï¿½Ö®Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½È´ï¿½
 	}
 	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -191,8 +191,8 @@ void VulkanCommandBuffer::transitionImageLayout(VkImage image, VkFormat format, 
 
 	vkCmdPipelineBarrier(
 		commandBuffer,
-		sourceStage /* ÄÄ¸ö¹ÜµÀ½×¶ÎµÄ²Ù×÷Ó¦¸Ã·¢ÉúÆÁÕÏÖ®Ç° */,
-		destinationStage /* ÄÄ¸ö½×¶ÎÓ¦¸ÃµÈ´ýÆÁÕÏ·¢ÉúÖ®ºó */,
+		sourceStage /* ï¿½Ä¸ï¿½ï¿½Üµï¿½ï¿½×¶ÎµÄ²ï¿½ï¿½ï¿½Ó¦ï¿½Ã·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®Ç° */,
+		destinationStage /* ï¿½Ä¸ï¿½ï¿½×¶ï¿½Ó¦ï¿½ÃµÈ´ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ */,
 		0,
 		0, nullptr,
 		0, nullptr,
