@@ -40,6 +40,6 @@ void VulkanCommandBuffer::endSingleTimeCommands(VkCommandBuffer commandBuffer)
 	submitInfo.pCommandBuffers = &commandBuffer;
 
 	//vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(graphicsQueue);
+	//vkQueueWaitIdle(graphicsQueue);
 	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
