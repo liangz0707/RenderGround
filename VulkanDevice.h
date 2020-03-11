@@ -13,6 +13,12 @@ private:
 public:
 	VulkanDevice(VulkanApplication *vulkanInstance);
 	void createLogicalDevice();
+	VkQueue GetGraphicQueue() {
+		return graphicsQueue;
+	}
+	VkQueue GetPresentQueue() {
+		return presentQueue;
+	}
 	VkDevice GetDevice()
 	{
 		return device;

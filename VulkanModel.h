@@ -21,7 +21,6 @@ private:
 	unsigned char* pixels;
 public:
 	VulkanModel();
-	void createTextureImage();
 	void createTextureImageView();
 
 };

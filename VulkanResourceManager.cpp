@@ -15,6 +15,7 @@ VkFormat VulkanResourceManager::findDepthFormat() {
 		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 	);
 }
+
 VkFramebuffer VulkanResourceManager::createFramebuffer(VkFramebufferCreateInfo* framebufferInfo)
 {
 	VkFramebuffer vkFramebuffer;
@@ -180,7 +181,6 @@ void VulkanResourceManager::freeMemory(VkDeviceMemory memory)
 {
 	vkFreeMemory(vulkanDevice->GetDevice(), memory, nullptr);
 }
-
 
 VkImageView VulkanResourceManager::createImageView(VkImage image,
 	VkFormat format,
