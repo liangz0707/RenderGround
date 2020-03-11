@@ -3,3 +3,7 @@ Debug/
 textures/
 X64/
 .vs/
+ValkunTutorial.sln
+*.vcxproj
+*.filters
+*.user
