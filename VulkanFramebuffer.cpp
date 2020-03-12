@@ -27,6 +27,10 @@ void VulkanFramebuffer::createSwapChainFrameBuffers() {
 		vVulkanFrameBuffer[i] = createFrameBuffer(attachments, vulkanSwapChain->GetSwapChainImageExtent());
 	}
 }
+VkExtent2D VulkanFramebuffer::GetFrameBufferExtent()
+{
+	return vulkanSwapChain->GetSwapChainImageExtent();
+}
 void VulkanFramebuffer::createDepthResource(VkFormat format, VkExtent2D extent2D)
 { 
 	

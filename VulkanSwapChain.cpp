@@ -145,15 +145,15 @@ void  VulkanSwapChain::createSwapChain() {
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
 	//
-	if (vkCreateSwapchainKHR(vulkanDevice->GetDevice(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
+	if (vkCreateSwapchainKHR(vulkanDevice->GetInstance(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create swap chain!");
 	}
 
 	//交换链现在已经创建，所以剩下的就是检索其中VkImages的句柄
 	//这些映像是由交换链实现创建的，一旦交换链被销毁，它们将被自动清除
-	vkGetSwapchainImagesKHR(vulkanDevice->GetDevice(), swapChain, &imageCount, nullptr);
+	vkGetSwapchainImagesKHR(vulkanDevice->GetInstance(), swapChain, &imageCount, nullptr);
 	swapChainImages.resize(imageCount);
-	vkGetSwapchainImagesKHR(vulkanDevice->GetDevice(), swapChain, &imageCount, swapChainImages.data());
+	vkGetSwapchainImagesKHR(vulkanDevice->GetInstance(), swapChain, &imageCount, swapChainImages.data());
 
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;

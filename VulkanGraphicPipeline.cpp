@@ -5,9 +5,14 @@ VulkanGraphicPipeline::VulkanGraphicPipeline()
 
 
 
-void VulkanGraphicPipeline::createGraphicsPipeline(VkShaderModule vertShaderModule, VkShaderModule fragShaderModule)
+void VulkanGraphicPipeline::createGraphicsPipeline(
+	VkShaderModule vertShaderModule, 
+	VkShaderModule fragShaderModule,
+	VkExtent2D swapChainExtent,
+	VkDescriptorSetLayout* descriptorSetLayout,
+	VkPipelineLayout pipelineLayout,
+	VkRenderPass renderPass)
 {
-	/*
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
 	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -124,13 +129,13 @@ void VulkanGraphicPipeline::createGraphicsPipeline(VkShaderModule vertShaderModu
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutInfo.setLayoutCount = 1; // Optional
-	pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout; // Optional
+	pipelineLayoutInfo.pSetLayouts = descriptorSetLayout; // Optional
 	pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 	pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
-	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create pipeline layout!");
-	}
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	RM->createPipelineLayout(&pipelineLayoutInfo, &pipelineLayout);
 
 	VkPipelineDepthStencilStateCreateInfo depthStencil = {};
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -166,11 +171,8 @@ void VulkanGraphicPipeline::createGraphicsPipeline(VkShaderModule vertShaderModu
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
 
-	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create graphics pipeline!");
-	}
 
-	vkDestroyShaderModule(device, fragShaderModule, nullptr);
-	vkDestroyShaderModule(device, vertShaderModule, nullptr);
-	*/
+	RM->createGraphicsPipeline(&pipelineInfo, &graphicsPipeline);
+
+
 }

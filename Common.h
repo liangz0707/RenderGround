@@ -74,6 +74,19 @@ struct Vertex {
 	}
 };
 
+struct UniformBufferObject {
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 proj;
+
+};
+
+
+struct PreEntityUniformBufferObject {
+	glm::vec4 ScreenInfo;
+	glm::vec4 CameraInfo;
+};
+
 namespace std {
 	template<> struct hash<Vertex> {
 		size_t operator()(Vertex const& vertex) const {

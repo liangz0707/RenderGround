@@ -2,6 +2,11 @@
 
 VulkanResourceManager* VulkanResourceManager::vulkanResourceManager = NULL;
 
+VulkanFramebuffer* VulkanResourceManager::GetFramebuffer()
+{
+	return vulkanFramebuffer;
+}
+
 VulkanResourceManager::VulkanResourceManager(VulkanDevice* vulkanDevice, VulkanApplication * vulkanInstance)
 {
 	this->vulkanDevice = vulkanDevice;
@@ -16,10 +21,36 @@ VkFormat VulkanResourceManager::findDepthFormat() {
 	);
 }
 
+void VulkanResourceManager::createSyncObjects() {
+	// 同步一个Flight内部的
+	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	// 同步不同的FLIGHT之间的
+	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+	imagesInFlight.resize(vulkanFramebuffer->GetFrameBufferSize(), VK_NULL_HANDLE);
+
+	VkSemaphoreCreateInfo semaphoreInfo = {};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	VkFenceCreateInfo fenceInfo = {};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	//by default, fences are created in the unsignaled state. 
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		if (vkCreateSemaphore(vulkanDevice->GetInstance(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+			vkCreateSemaphore(vulkanDevice->GetInstance(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+			vkCreateFence(vulkanDevice->GetInstance(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
+
+			throw std::runtime_error("failed to create synchronization objects for a frame!");
+		}
+	}
+}
+
 VkFramebuffer VulkanResourceManager::createFramebuffer(VkFramebufferCreateInfo* framebufferInfo)
 {
 	VkFramebuffer vkFramebuffer;
-	if (vkCreateFramebuffer(vulkanDevice->GetDevice(), framebufferInfo, nullptr, &vkFramebuffer) != VK_SUCCESS) {
+	if (vkCreateFramebuffer(vulkanDevice->GetInstance(), framebufferInfo, nullptr, &vkFramebuffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create framebuffer!");
 	}
 	return vkFramebuffer;
@@ -59,12 +90,12 @@ QueueFamilyIndices VulkanResourceManager::findQueueFamilies() {
 
 void VulkanResourceManager::mapMemory(VkDeviceMemory memory, VkDeviceSize size, void** data)
 {
-	vkMapMemory(vulkanDevice->GetDevice(), memory, 0, size, 0, data);
+	(vulkanDevice->GetInstance(), memory, 0, size, 0, data);
 }
 
 void VulkanResourceManager::unMapMemory(VkDeviceMemory memory)
 {
-	vkUnmapMemory(vulkanDevice->GetDevice(), memory);
+	vkUnmapMemory(vulkanDevice->GetInstance(), memory);
 }
 
 void VulkanResourceManager::createCommandPool()
@@ -75,7 +106,7 @@ void VulkanResourceManager::createCommandPool()
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 	poolInfo.flags = 0; // Optional
-	if (vkCreateCommandPool(vulkanDevice->GetDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+	if (vkCreateCommandPool(vulkanDevice->GetInstance(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create command pool!");
 	}
 }
@@ -106,23 +137,23 @@ void VulkanResourceManager::createBuffer(VkDeviceSize size,
 	bufferInfo.usage = usage;
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	if (vkCreateBuffer(vulkanDevice->GetDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+	if (vkCreateBuffer(vulkanDevice->GetInstance(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create buffer!");
 	}
 
 	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(vulkanDevice->GetDevice(), buffer, &memRequirements);
+	vkGetBufferMemoryRequirements(vulkanDevice->GetInstance(), buffer, &memRequirements);
 
 	VkMemoryAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
 	allocInfo.memoryTypeIndex = Utility::findMemoryType(vulkanInstance->GetVkPhysicalDevice(),memRequirements.memoryTypeBits, properties);
 
-	if (vkAllocateMemory(vulkanDevice->GetDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+	if (vkAllocateMemory(vulkanDevice->GetInstance(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate buffer memory!");
 	}
 
-	vkBindBufferMemory(vulkanDevice->GetDevice(), buffer, bufferMemory, 0);
+	vkBindBufferMemory(vulkanDevice->GetInstance(), buffer, bufferMemory, 0);
 }
 
 void VulkanResourceManager::createImage(uint32_t width, uint32_t height,
@@ -148,40 +179,65 @@ void VulkanResourceManager::createImage(uint32_t width, uint32_t height,
 	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	if (vkCreateImage(vulkanDevice->GetDevice(), &imageInfo, nullptr, &image) != VK_SUCCESS) {
+	if (vkCreateImage(vulkanDevice->GetInstance(), &imageInfo, nullptr, &image) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create image!");
 	}
 
 	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(vulkanDevice->GetDevice(), image, &memRequirements);
+	vkGetImageMemoryRequirements(vulkanDevice->GetInstance(), image, &memRequirements);
 
 	VkMemoryAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
 	allocInfo.memoryTypeIndex = Utility::findMemoryType(vulkanInstance->GetVkPhysicalDevice(), memRequirements.memoryTypeBits, properties);
 
-	if (vkAllocateMemory(vulkanDevice->GetDevice(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+	if (vkAllocateMemory(vulkanDevice->GetInstance(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate image memory!");
 	}
 
-	vkBindImageMemory(vulkanDevice->GetDevice(), image, imageMemory, 0);
+	vkBindImageMemory(vulkanDevice->GetInstance(), image, imageMemory, 0);
 }
 
 void VulkanResourceManager::destroyImage(VkImage image)
 {
-	vkDestroyImage(vulkanDevice->GetDevice(), image, nullptr);
+	vkDestroyImage(vulkanDevice->GetInstance(), image, nullptr);
+}
+
+void VulkanResourceManager::allocCommandBuffer(VkCommandBufferAllocateInfo * allocInfo, VkCommandBuffer *commandBuffer)
+{
+	vkAllocateCommandBuffers(vulkanDevice->GetInstance(), allocInfo, commandBuffer);
 }
 
 void VulkanResourceManager::destroyBuffer(VkBuffer buffer)
 {
-	vkDestroyBuffer(vulkanDevice->GetDevice(), buffer, nullptr);
+	vkDestroyBuffer(vulkanDevice->GetInstance(), buffer, nullptr);
 }
 
 void VulkanResourceManager::freeMemory(VkDeviceMemory memory)
 {
-	vkFreeMemory(vulkanDevice->GetDevice(), memory, nullptr);
+	vkFreeMemory(vulkanDevice->GetInstance(), memory, nullptr);
 }
 
+void VulkanResourceManager::createSampler(VkSamplerCreateInfo* samplerInfo, VkSampler *sampler)
+{
+	if (vkCreateSampler(vulkanDevice->GetInstance(), samplerInfo, nullptr, sampler) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create texture sampler!");
+	}
+}
+
+void VulkanResourceManager::createPipelineLayout(VkPipelineLayoutCreateInfo * pipelineLayoutInfo, VkPipelineLayout * pipelineLayout)
+{
+	if (vkCreatePipelineLayout(vulkanDevice->GetInstance(), pipelineLayoutInfo, nullptr, pipelineLayout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create pipeline layout!");
+	}
+}
+void VulkanResourceManager::createGraphicsPipeline( VkGraphicsPipelineCreateInfo* pipelineLayoutInfo, VkPipeline* pipeline)
+{
+	if (vkCreateGraphicsPipelines(vulkanDevice->GetInstance(), VK_NULL_HANDLE, 1, pipelineLayoutInfo, nullptr, pipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+}
 VkImageView VulkanResourceManager::createImageView(VkImage image,
 	VkFormat format,
 	VkImageAspectFlags flags)
@@ -193,7 +249,7 @@ VkImageView VulkanResourceManager::createImageView(VkImage image,
 	createInfo.format = format;
 	
 	VkImageView imageView;
-	if (vkCreateImageView(vulkanDevice->GetDevice(), &createInfo, nullptr, &imageView) != VK_SUCCESS)
+	if (vkCreateImageView(vulkanDevice->GetInstance(), &createInfo, nullptr, &imageView) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create Image View");
 

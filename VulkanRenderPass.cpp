@@ -25,7 +25,7 @@ void VulkanRenderPass::createDescriptorSets(std::vector<VkBuffer> uniformBuffers
 	allocInfo.pSetLayouts = layouts.data();
 
 	descriptorSets.resize(vulkanSwapChain->GetSwapChainImageSize());
-	if (vkAllocateDescriptorSets(vulkanDevice->GetDevice(), &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+	if (vkAllocateDescriptorSets(vulkanDevice->GetInstance(), &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
 
@@ -73,7 +73,7 @@ void VulkanRenderPass::createDescriptorSets(std::vector<VkBuffer> uniformBuffers
 		descriptorWrites[2].pBufferInfo = &preBufferInfo;
 
 
-		vkUpdateDescriptorSets(vulkanDevice->GetDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+		vkUpdateDescriptorSets(vulkanDevice->GetInstance(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 	}
 
 
@@ -95,7 +95,7 @@ void VulkanRenderPass::createDescriptorPool() {
 	poolInfo.pPoolSizes = poolSizes.data();
 	poolInfo.maxSets = static_cast<uint32_t>(vulkanSwapChain->GetSwapChainImageSize());
 
-	if (vkCreateDescriptorPool(vulkanDevice->GetDevice(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+	if (vkCreateDescriptorPool(vulkanDevice->GetInstance(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }
@@ -129,12 +129,45 @@ void VulkanRenderPass::createDescriptorSetLayout() {
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 	layoutInfo.pBindings = bindings.data();
 
-	if (vkCreateDescriptorSetLayout(vulkanDevice->GetDevice(), &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+	if (vkCreateDescriptorSetLayout(vulkanDevice->GetInstance(), &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 }
 
+void VulkanRenderPass::updateUniformBuffer() {
 
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	static auto startTime = std::chrono::high_resolution_clock::now();
+
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+	UniformBufferObject ubo = {};
+	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	ubo.proj = glm::perspective(glm::radians(45.0f), RM->GetFramebuffer()->GetFrameBufferExtent().width / (float)RM->GetFramebuffer()->GetFrameBufferExtent().height, 0.1f, 10.0f);
+	/*
+	GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted.
+	*/
+	ubo.proj[1][1] *= -1;
+
+	void* data;
+	RM->mapMemory(vulkanipelineResource->GetUboMemory(),  sizeof(ubo), &data);
+	memcpy(data, &ubo, sizeof(ubo));
+	RM->unMapMemory(vulkanipelineResource->GetUboMemory());
+
+
+	PreEntityUniformBufferObject eubo = {};
+
+	eubo.CameraInfo = glm::vec4(1.0f);
+	eubo.ScreenInfo = glm::vec4(0.5f);
+	RM->mapMemory(vulkanipelineResource->GetPreUboMemory(), sizeof(eubo), &data);
+	memcpy(data, &eubo, sizeof(eubo));
+	RM->unMapMemory(vulkanipelineResource->GetPreUboMemory());
+}
 
 void VulkanRenderPass::createRenderPass() {
 	VkAttachmentDescription colorAttachment = {};
@@ -212,7 +245,7 @@ void VulkanRenderPass::createRenderPass() {
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
 
-	if (vkCreateRenderPass(vulkanDevice->GetDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+	if (vkCreateRenderPass(vulkanDevice->GetInstance(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create render pass!");
 	}
 
@@ -228,4 +261,10 @@ void VulkanRenderPass::createRenderPass() {
 
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
+}
+
+void VulkanRenderPass::createGraphicPipelines()
+{
+	vulkanGraphicPipeline = new VulkanGraphicPipeline();
+	//vulkanGraphicPipeline->createGraphicsPipeline()
 }

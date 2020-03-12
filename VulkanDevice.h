@@ -19,7 +19,7 @@ public:
 	VkQueue GetPresentQueue() {
 		return presentQueue;
 	}
-	VkDevice GetDevice()
+	VkDevice GetInstance()
 	{
 		return device;
 	}

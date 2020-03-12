@@ -10,10 +10,22 @@ class VulkanGraphicPipeline
 
 public:
 	VulkanGraphicPipeline();
+
 	void createGraphicsPipeline(
-		VkShaderModule vertShaderModule, 
-		VkShaderModule fragShaderModule
-	);
+		VkShaderModule vertShaderModule,
+		VkShaderModule fragShaderModule,
+		VkExtent2D swapChainExtent,
+		VkDescriptorSetLayout* descriptorSetLayout,
+		VkPipelineLayout pipelineLayout,
+		VkRenderPass renderPass);
+
+	VkPipeline GetInstance()
+	{
+		return graphicsPipeline;
+	}
+
+private:
+	VkPipeline graphicsPipeline;
 };
 
 
