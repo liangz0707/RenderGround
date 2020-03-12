@@ -12,7 +12,7 @@ class VulkanTestRendering
 {
 public:
 	VulkanTestRendering();
-	void Render(VkCommandBuffer commandBuffer, VkFramebuffer frameBuffer, VkExtent2D extent);
+	void Render(VkCommandBuffer commandBuffer, VkFramebuffer frameBuffer, VkExtent2D extent, VkDescriptorSet descriptorSet);
 
 private:
 	VulkanFrameRenderCommandBuffer* vulkanCommandBuffer;

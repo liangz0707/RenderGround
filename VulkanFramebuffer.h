@@ -23,6 +23,11 @@ public:
 		return vVulkanFrameBuffer[index];
 	}
 
+	VulkanSwapChain* GetSwapChain()
+	{
+		return vulkanSwapChain;
+	}
+
 private:
 
 	VulkanSwapChain* vulkanSwapChain;

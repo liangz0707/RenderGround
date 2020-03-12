@@ -17,7 +17,6 @@ public:
 	static void SetResourceManager(VulkanDevice* vulkanDevice, VulkanApplication* vulkanInstance) {
 		if (vulkanResourceManager == nullptr)
 			vulkanResourceManager = new VulkanResourceManager(vulkanDevice, vulkanInstance);
-
 	}
 
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags flags);

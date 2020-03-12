@@ -12,10 +12,6 @@ class VulkanPipelineResource;
 class VulkanRenderPass
 {
 private:
-	VulkanSwapChain* vulkanSwapChain;
-
-	VulkanDevice* vulkanDevice;
-	VulkanApplication* vulkanApplication;
 
 	VkRenderPass renderPass;
 	VkDescriptorPool descriptorPool;
@@ -24,16 +20,30 @@ private:
 	VkPipelineLayout pipelineLayout;
 	VulkanGraphicPipeline* vulkanGraphicPipeline;
 
-	VulkanPipelineResource* vulkanpipelineResource;
+	VulkanPipelineResource* vulkanPipelineResource;
 
 public :
-	VulkanRenderPass(VulkanApplication* vulkanApplication,VulkanSwapChain * vulkanSwapChain, VulkanDevice* vulkanDevice);
+	VulkanRenderPass(VulkanPipelineResource* vulkanPipelineResource);
 	VkRenderPass GetInstance();
 	void createRenderPass();
 	void createGraphicPipelines();
 	void createDescriptorSetLayout();
 	void createDescriptorPool();
-	void createDescriptorSets(std::vector<VkBuffer> uniformBuffers, VkSampler textureSampler, VkImageView textureImageView, std::vector<VkBuffer> preEntityUniformBuffers);
+	void createDescriptorSets(std::vector<VkBuffer> uniformBuffers, std::vector<VkBuffer> preEntityUniformBuffers);
+	
+	VkDescriptorSet GetDescriptorSetByIndex(int i)
+	{
+		return descriptorSets[i];
+	}
 
+	VulkanGraphicPipeline *GetGraphicPipeline()
+	{
+		return vulkanGraphicPipeline;
+	}
+
+	VkPipelineLayout GetPipelineLayout()
+	{
+		return pipelineLayout;
+	}
 };
 

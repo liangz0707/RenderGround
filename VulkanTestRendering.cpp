@@ -6,7 +6,7 @@ VulkanTestRendering::VulkanTestRendering()
 	size_t commandBufferSize = RM->GetFramebuffer()->GetFrameBufferSize();
 
 	vulkanPipelineResource = new VulkanPipelineResource();
-	//vulkanRenderPass = new VulkanRenderPass(RM)
+	vulkanRenderPass = new VulkanRenderPass(vulkanPipelineResource);
 
 
 
@@ -19,7 +19,8 @@ VulkanTestRendering::VulkanTestRendering()
 		;
 		Render(commandBuffer,
 				RM->GetFramebuffer()->GetFrameBufferByIndex(i),
-			RM->GetFramebuffer()->GetFrameBufferExtent());
+				RM->GetFramebuffer()->GetFrameBufferExtent(),
+				vulkanRenderPass->GetDescriptorSetByIndex(i));
 		
 		vulkanCommandBuffer->VulkanCommandEnd(i);
 	}
@@ -27,14 +28,14 @@ VulkanTestRendering::VulkanTestRendering()
 
 void VulkanTestRendering::Render(VkCommandBuffer commandBuffer,
 	VkFramebuffer frameBuffer,
-	VkExtent2D extend
+	VkExtent2D extend,
+	VkDescriptorSet descriptorSet
 )
 {
-	/*
 	// 这里才是真正的把renderPass和swapchaing中的Framebuffer联系起来
 	VkRenderPassBeginInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = renderPass;
+	renderPassInfo.renderPass = vulkanRenderPass->GetInstance();
 	// framebuffer当中的attachment数量需要和renderPass当中的对应。
 	renderPassInfo.framebuffer = frameBuffer;
 
@@ -52,7 +53,7 @@ void VulkanTestRendering::Render(VkCommandBuffer commandBuffer,
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 	// 绑定其中的一个subpass的graphicsPipeline的状态。
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetGraphicPipeline()->GetInstance());
 
 	VkBuffer vertexBuffers[] = { vertexBuffer };
 	VkDeviceSize offsets[] = { 0 };
@@ -60,10 +61,9 @@ void VulkanTestRendering::Render(VkCommandBuffer commandBuffer,
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 	vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr);
 	//vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 	vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 	vkCmdEndRenderPass(commandBuffer);
-	*/
 }

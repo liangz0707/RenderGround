@@ -1,15 +1,15 @@
 #include "VulkanRenderPass.h"
 
-VulkanRenderPass::VulkanRenderPass(VulkanApplication* vulkanApplication, VulkanSwapChain* vulkanSwapChain, VulkanDevice* vulkanDevice)
+VulkanRenderPass::VulkanRenderPass(VulkanPipelineResource * vulkanPipelineResource)
 {
-	this->vulkanSwapChain = vulkanSwapChain;
-	this->vulkanDevice = vulkanDevice;
-	this->vulkanApplication = vulkanApplication;
+
 	createRenderPass();
 	createDescriptorSetLayout();
 	createDescriptorPool();
-	//vulkanipelineResource
-	//createDescriptorSets();
+	createDescriptorSets(
+		vulkanPipelineResource->GetUniformBuffers(),
+		vulkanPipelineResource->GetPreEntityUniformBuffers());
+	createGraphicPipelines();
 }
 
 VkRenderPass VulkanRenderPass::GetInstance()
@@ -17,20 +17,25 @@ VkRenderPass VulkanRenderPass::GetInstance()
 	return renderPass;
 }
 
-void VulkanRenderPass::createDescriptorSets(std::vector<VkBuffer> uniformBuffers, VkSampler textureSampler, VkImageView textureImageView, std::vector<VkBuffer> preEntityUniformBuffers) {
-	std::vector<VkDescriptorSetLayout> layouts(vulkanSwapChain->GetSwapChainImageSize(), descriptorSetLayout);
+void VulkanRenderPass::createDescriptorSets(std::vector<VkBuffer> uniformBuffers, std::vector<VkBuffer> preEntityUniformBuffers) {
+	
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+
+	std::vector<VkDescriptorSetLayout> layouts(layoutsSize, descriptorSetLayout);
 	VkDescriptorSetAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = descriptorPool;
-	allocInfo.descriptorSetCount = static_cast<uint32_t>(vulkanSwapChain->GetSwapChainImageSize());
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(layoutsSize);
 	allocInfo.pSetLayouts = layouts.data();
 
-	descriptorSets.resize(vulkanSwapChain->GetSwapChainImageSize());
-	if (vkAllocateDescriptorSets(vulkanDevice->GetInstance(), &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+	descriptorSets.resize(layoutsSize);
+	if (vkAllocateDescriptorSets(vkDevice, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
 
-	for (size_t i = 0; i < vulkanSwapChain->GetSwapChainImageSize(); i++) {
+	for (size_t i = 0; i < layoutsSize; i++) {
 		VkDescriptorBufferInfo bufferInfo = {};
 		bufferInfo.buffer = uniformBuffers[i];
 		bufferInfo.offset = 0;
@@ -41,11 +46,12 @@ void VulkanRenderPass::createDescriptorSets(std::vector<VkBuffer> uniformBuffers
 		preBufferInfo.offset = 0;
 		preBufferInfo.range = VK_WHOLE_SIZE;// sizeof(UniformBufferObject);
 
+		/*
 		VkDescriptorImageInfo imageInfo = {};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		imageInfo.imageView = textureImageView;
 		imageInfo.sampler = textureSampler;
-
+		*/
 		std::array<VkWriteDescriptorSet, 3> descriptorWrites = {};
 
 
@@ -56,7 +62,7 @@ void VulkanRenderPass::createDescriptorSets(std::vector<VkBuffer> uniformBuffers
 		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		descriptorWrites[0].descriptorCount = 1;
 		descriptorWrites[0].pBufferInfo = &bufferInfo;
-
+		/*
 		descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrites[1].dstSet = descriptorSets[i];
 		descriptorWrites[1].dstBinding = 1;
@@ -64,44 +70,52 @@ void VulkanRenderPass::createDescriptorSets(std::vector<VkBuffer> uniformBuffers
 		descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		descriptorWrites[1].descriptorCount = 1;
 		descriptorWrites[1].pImageInfo = &imageInfo;
+		*/
+		descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrites[1].dstSet = descriptorSets[i];//对应SetLayout
+		descriptorWrites[1].dstBinding = 2;  //对应SetLayout当中的Bading数字
+		descriptorWrites[1].dstArrayElement = 0;
+		descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorWrites[1].descriptorCount = 1;
+		descriptorWrites[1].pBufferInfo = &preBufferInfo;
 
-		descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[2].dstSet = descriptorSets[i];//对应SetLayout
-		descriptorWrites[2].dstBinding = 2;  //对应SetLayout当中的Bading数字
-		descriptorWrites[2].dstArrayElement = 0;
-		descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrites[2].descriptorCount = 1;
-		descriptorWrites[2].pBufferInfo = &preBufferInfo;
 
-
-		vkUpdateDescriptorSets(vulkanDevice->GetInstance(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+		vkUpdateDescriptorSets(vkDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 	}
 
 
 }
 
 void VulkanRenderPass::createDescriptorPool() {
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 	std::array<VkDescriptorPoolSize, 3> poolSizes = {};
 
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(vulkanSwapChain->GetSwapChainImageSize());
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(layoutsSize);
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[1].descriptorCount = static_cast<uint32_t>(vulkanSwapChain->GetSwapChainImageSize());
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(layoutsSize);
 	poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[2].descriptorCount = static_cast<uint32_t>(vulkanSwapChain->GetSwapChainImageSize());
+	poolSizes[2].descriptorCount = static_cast<uint32_t>(layoutsSize);
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32_t>(vulkanSwapChain->GetSwapChainImageSize());
+	poolInfo.maxSets = static_cast<uint32_t>(layoutsSize);
 
-	if (vkCreateDescriptorPool(vulkanDevice->GetInstance(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+	if (vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }
 
 void VulkanRenderPass::createDescriptorSetLayout() {
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+
 	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
 	uboLayoutBinding.binding = 0;
 	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -130,7 +144,7 @@ void VulkanRenderPass::createDescriptorSetLayout() {
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 	layoutInfo.pBindings = bindings.data();
 
-	if (vkCreateDescriptorSetLayout(vulkanDevice->GetInstance(), &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+	if (vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 }
@@ -138,9 +152,14 @@ void VulkanRenderPass::createDescriptorSetLayout() {
 
 
 void VulkanRenderPass::createRenderPass() {
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+	
 	VkAttachmentDescription colorAttachment = {};
 	//The format of the color attachment should match the format of the swap chain image
-	colorAttachment.format = vulkanSwapChain->GetSwapChainImageFormat();
+	colorAttachment.format = RM->GetFramebuffer()->GetSwapChain()->GetSwapChainImageFormat();
 	//we're not doing anything with multisampling yet, so we'll stick to 1 sample.
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	//下面两项分别表示渲染开始前和渲染结束后
@@ -169,7 +188,7 @@ void VulkanRenderPass::createRenderPass() {
 
 
 	VkAttachmentDescription depthAttachment = {};
-	depthAttachment.format = Utility::findDepthFormat(vulkanApplication->GetVkPhysicalDevice());
+	depthAttachment.format = RM->findDepthFormat();
 	depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -213,7 +232,7 @@ void VulkanRenderPass::createRenderPass() {
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
 
-	if (vkCreateRenderPass(vulkanDevice->GetInstance(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+	if (vkCreateRenderPass(vkDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create render pass!");
 	}
 
@@ -234,5 +253,5 @@ void VulkanRenderPass::createRenderPass() {
 void VulkanRenderPass::createGraphicPipelines()
 {
 	vulkanGraphicPipeline = new VulkanGraphicPipeline();
-	//vulkanGraphicPipeline->createGraphicsPipeline()
+	//vulkanGraphicPipeline->createGraphicsPipeline();
 }

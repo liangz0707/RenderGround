@@ -30,6 +30,7 @@ public:
 		VkDeviceMemory textureImageMemory);
 
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	
 	void createUniformBuffers(VkDeviceSize bufferSize);
 
 	void updateUniformBuffer();
@@ -39,6 +40,21 @@ public:
 	VkCommandPool GetCommandPool()
 	{
 		return commandPool;
+	}
+
+	std::vector<VkBuffer> GetUniformBuffers()
+	{
+		return uniformBuffers;
+	}
+
+	std::vector<VkBuffer> GetPreEntityUniformBuffers()
+	{
+		return preEntityUniformBuffers;
+	}
+
+	VkSampler GetTextureSampler()
+	{
+		return textureSampler;
 	}
 
 private:
