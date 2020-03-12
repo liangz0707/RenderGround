@@ -24,7 +24,7 @@ private:
 	VkPipelineLayout pipelineLayout;
 	VulkanGraphicPipeline* vulkanGraphicPipeline;
 
-	VulkanPipelineResource* vulkanipelineResource;
+	VulkanPipelineResource* vulkanpipelineResource;
 
 public :
 	VulkanRenderPass(VulkanApplication* vulkanApplication,VulkanSwapChain * vulkanSwapChain, VulkanDevice* vulkanDevice);

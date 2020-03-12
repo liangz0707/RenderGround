@@ -36,12 +36,12 @@ VulkanSingleTimeCommandBuffer::~VulkanSingleTimeCommandBuffer()
 	vkFreeCommandBuffers(RM->GetDevice()->GetInstance(), commandPool, 1, &commandBuffer);
 }
 
-VulkanFrameRenderCommandBuffer::VulkanFrameRenderCommandBuffer(VkCommandPool commandPool)
+VulkanFrameRenderCommandBuffer::VulkanFrameRenderCommandBuffer(VkCommandPool commandPool, size_t commandBufferSize)
 {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
-	commandBuffers.resize(RM->GetFramebuffer()->GetFrameBufferSize());
+	commandBuffers.resize(commandBufferSize);
 	VkCommandBufferAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.commandPool = commandPool;
@@ -62,7 +62,7 @@ VulkanFrameRenderCommandBuffer::~VulkanFrameRenderCommandBuffer()
 	vkFreeCommandBuffers(RM->GetDevice()->GetInstance(), commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 }
 
-void VulkanFrameRenderCommandBuffer::VulkanCommandBegin(int index)
+VkCommandBuffer VulkanFrameRenderCommandBuffer::VulkanCommandBegin(int index)
 {
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

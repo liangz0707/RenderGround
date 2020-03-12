@@ -36,6 +36,11 @@ public:
 	VkDeviceMemory GetUboMemory();
 	VkDeviceMemory GetPreUboMemory();
 
+	VkCommandPool GetCommandPool()
+	{
+		return commandPool;
+	}
+
 private:
 	int imageIndex;
 	VkCommandPool commandPool;

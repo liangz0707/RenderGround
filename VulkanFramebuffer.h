@@ -18,6 +18,11 @@ public:
 		return vVulkanFrameBuffer.size();
 	}
 	VkExtent2D GetFrameBufferExtent();
+	VkFramebuffer GetFrameBufferByIndex(int index)
+	{
+		return vVulkanFrameBuffer[index];
+	}
+
 private:
 
 	VulkanSwapChain* vulkanSwapChain;

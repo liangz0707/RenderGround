@@ -8,6 +8,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanApplication* vulkanApplication, VulkanS
 	createRenderPass();
 	createDescriptorSetLayout();
 	createDescriptorPool();
+	//vulkanipelineResource
 	//createDescriptorSets();
 }
 
