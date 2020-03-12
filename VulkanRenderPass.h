@@ -33,7 +33,6 @@ public :
 	void createGraphicPipelines();
 	void createDescriptorSetLayout();
 	void createDescriptorPool();
-	void updateUniformBuffer();
 	void createDescriptorSets(std::vector<VkBuffer> uniformBuffers, VkSampler textureSampler, VkImageView textureImageView, std::vector<VkBuffer> preEntityUniformBuffers);
 
 };
