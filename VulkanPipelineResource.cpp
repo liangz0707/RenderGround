@@ -82,8 +82,8 @@ VkDeviceMemory VulkanPipelineResource::GetPreUboMemory()
 
 void VulkanPipelineResource::createVertexBuffer(VkDeviceSize bufferSize,
 										void * srcData,
-										VkBuffer vertexBuffer,
-										VkDeviceMemory vertexBufferMemory) {
+										VkBuffer &vertexBuffer,
+										VkDeviceMemory &vertexBufferMemory) {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
@@ -122,8 +122,8 @@ void VulkanPipelineResource::createVertexBuffer(VkDeviceSize bufferSize,
 
 void VulkanPipelineResource::createIndexBuffer(VkDeviceSize bufferSize,
 	void* srcData,
-	VkBuffer vertexBuffer,
-	VkDeviceMemory vertexBufferMemory)
+	VkBuffer &vertexBuffer,
+	VkDeviceMemory &vertexBufferMemory)
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 

@@ -1,8 +1,6 @@
 #include "VulkanRModel.h"
 
-VulkanRModel::VulkanRModel(VulkanModel* vulkanModel)
+VulkanRModel::VulkanRModel()
 {
-	vulkanModel->GetVertex();
-	vulkanModel->GetIndex();
-	
+
 }

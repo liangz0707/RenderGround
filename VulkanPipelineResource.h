@@ -3,13 +3,14 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanResourceManager.h"
 #include "VulkanSceneManager.h"
+class VulkanSceneManager;
+class VulkanModel;
+
 class VulkanPipelineResource
 {
 public:
 	VulkanPipelineResource();
 
-	void loadRenderModel(VulkanModel* vulkanModel);
-	void unloadRenderModel(VulkanModel* vulkanModel);
 
 	void createTextureSampler();
 	void createCommandBuffers();
@@ -19,13 +20,13 @@ public:
 
 	void createVertexBuffer(VkDeviceSize bufferSize,
 		void* srcData,
-		VkBuffer vertexBuffer,
-		VkDeviceMemory vertexBufferMemory);
+		VkBuffer &vertexBuffer,
+		VkDeviceMemory &vertexBufferMemory);
 
 	void createIndexBuffer(VkDeviceSize bufferSize,
 		void* srcData,
-		VkBuffer vertexBuffer,
-		VkDeviceMemory vertexBufferMemory);
+		VkBuffer &vertexBuffer,
+		VkDeviceMemory &vertexBufferMemory);
 
 	void createTextureImage(unsigned char* pixels,
 		int texWidth,
@@ -63,7 +64,7 @@ public:
 	}
 
 private:
-	VulkanSceneManeger* vulkanSceneManager;
+	VulkanSceneManager* vulkanSceneManager;
 	int imageIndex;
 	VkCommandPool commandPool;
 	VkSampler textureSampler;

@@ -72,6 +72,8 @@ VkCommandBuffer VulkanFrameRenderCommandBuffer::VulkanCommandBegin(int index)
 	if (vkBeginCommandBuffer(commandBuffers[index], &beginInfo) != VK_SUCCESS) {
 		throw std::runtime_error("failed to begin recording command buffer!");
 	}
+
+	return commandBuffers[index];
 }
 
 void VulkanFrameRenderCommandBuffer::VulkanCommandEnd(int index)
