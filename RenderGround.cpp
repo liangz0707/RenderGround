@@ -19,6 +19,7 @@ void RenderGround::run()
 
 void RenderGround::drawFrame()
 {
+	/*
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
 	uint32_t imageIndex;
@@ -91,7 +92,7 @@ void RenderGround::drawFrame()
 	}
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-
+	*/
 }
 
 void RenderGround::mainLoop() {

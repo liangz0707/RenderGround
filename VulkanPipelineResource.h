@@ -2,10 +2,15 @@
 #include "Common.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanResourceManager.h"
+#include "VulkanSceneManager.h"
 class VulkanPipelineResource
 {
 public:
 	VulkanPipelineResource();
+
+	void loadRenderModel(VulkanModel* vulkanModel);
+	void unloadRenderModel(VulkanModel* vulkanModel);
+
 	void createTextureSampler();
 	void createCommandBuffers();
 	bool hasStencilComponent(VkFormat format);
@@ -58,6 +63,7 @@ public:
 	}
 
 private:
+	VulkanSceneManeger* vulkanSceneManager;
 	int imageIndex;
 	VkCommandPool commandPool;
 	VkSampler textureSampler;

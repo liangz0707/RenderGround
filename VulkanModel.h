@@ -13,15 +13,21 @@ private:
 	Vertex* vertex;
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
+	
 
-	VkImage textureImage;
-	VkDeviceMemory textureImageMemory;
-	VkImageView textureImageView;
 
 	unsigned char* pixels;
 public:
 	VulkanModel();
-	void createTextureImageView();
 
+	std::vector<Vertex> GetVertex()
+	{
+		return vertices;
+	}
+
+	std::vector<uint32_t> GetIndex()
+	{
+		return indices;
+	}
 };
 
