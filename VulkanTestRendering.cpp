@@ -1,29 +1,30 @@
 #include "VulkanTestRendering.h"
 
-VulkanTestRendering::VulkanTestRendering()
+VulkanTestRendering::VulkanTestRendering(VulkanRenderPass* vulkanRenderPass)
+{
+	this->vulkanRenderPass = vulkanRenderPass;
+}
+
+void VulkanTestRendering::Config(VulkanFrameRenderCommandBuffer* vulkanCommandBuffer)
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t commandBufferSize = RM->GetFramebuffer()->GetFrameBufferSize();
 
-	vulkanPipelineResource = new VulkanPipelineResource();
-	vulkanRenderPass = new VulkanRenderPass(vulkanPipelineResource);
-
-
-
-	vulkanCommandBuffer = new VulkanFrameRenderCommandBuffer(vulkanPipelineResource->GetCommandPool(), commandBufferSize);
-
-
-	for (int i = 0; i < commandBufferSize; i++)
+	for (int i = 0; i < vulkanCommandBuffer->GetCommandBufferSize(); i++)
 	{
 		VkCommandBuffer commandBuffer = vulkanCommandBuffer->VulkanCommandBegin(i);
 		;
 		Render(commandBuffer,
-				RM->GetFramebuffer()->GetFrameBufferByIndex(i),
-				RM->GetFramebuffer()->GetFrameBufferExtent(),
-				vulkanRenderPass->GetDescriptorSetByIndex(i));
-		
+			RM->GetFramebuffer()->GetFrameBufferByIndex(i),
+			RM->GetExtent(),
+			vulkanRenderPass->GetDescriptorSetByIndex(i));
+
 		vulkanCommandBuffer->VulkanCommandEnd(i);
 	}
+}
+
+
+void VulkanTestRendering::SetSceneManager(VulkanSceneManager* vulkanSceneManager){
+	this->vulkanSceneManager = vulkanSceneManager;
 }
 
 void VulkanTestRendering::Render(VkCommandBuffer commandBuffer,

@@ -3,6 +3,8 @@
 #include "VulkanDevice.h"
 #include "VulkanApplication.h"
 #include "VulkanFramebuffer.h"
+#include "VulkanSwapChain.h"
+class VulkanSwapChain;
 class VulkanFramebuffer;
 
 class VulkanResourceManager
@@ -14,10 +16,16 @@ public:
 		return vulkanResourceManager;
 	}
 
-	static void SetResourceManager(VulkanDevice* vulkanDevice, VulkanApplication* vulkanInstance) {
+	static void SetResourceManager(VulkanDevice* vulkanDevice, VulkanApplication* vulkanInstance,VulkanSwapChain* vulkanSwapChain) {
 		if (vulkanResourceManager == nullptr)
-			vulkanResourceManager = new VulkanResourceManager(vulkanDevice, vulkanInstance);
+			vulkanResourceManager = new VulkanResourceManager(vulkanDevice, vulkanInstance, vulkanSwapChain);
 	}
+	VkFramebuffer createFramebuffer(VkFramebufferCreateInfo* framebufferInfo);
+
+	void SetFramebuffer(VulkanFramebuffer*);
+	VulkanFramebuffer* GetFramebuffer();
+	void SetSwapChain(VulkanSwapChain* vulkanSwapChain);
+	VulkanSwapChain* GetSwapChain();
 
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags flags);
 	
@@ -45,8 +53,7 @@ public:
 		VkDeviceMemory& bufferMemory);
 
 	void createCommandPool();
-
-	VkFramebuffer createFramebuffer(VkFramebufferCreateInfo *framebufferInfo);
+	VkCommandPool GetCommandPool();
 
 	VkFormat findDepthFormat();
 	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -61,9 +68,18 @@ public:
 		return vulkanDevice;
 	}
 
-	VulkanFramebuffer* GetFramebuffer();
+	VkExtent2D GetExtent();
+
+
+	// 同步互斥操作：
+
+
+
 private:
-	VulkanResourceManager(VulkanDevice* vulkanDevice, VulkanApplication* vulkanInstance);
+	VulkanResourceManager(
+		VulkanDevice* vulkanDevice, 
+		VulkanApplication* vulkanInstance,
+		VulkanSwapChain* vulkanSwapChain);
 
 	static VulkanResourceManager* vulkanResourceManager;
 	// 同时运作的渲染的图像
@@ -77,10 +93,11 @@ private:
 	std::vector<VkFence> inFlightFences;
 	std::vector<VkFence> imagesInFlight;
 
+	VulkanSwapChain* vulkanSwapChain;
+	VulkanFramebuffer* vulkanFramebuffer;
 	VkCommandPool commandPool;
 	VulkanDevice* vulkanDevice;
 	VulkanApplication* vulkanInstance;
-	VulkanFramebuffer* vulkanFramebuffer;
 
 };
 

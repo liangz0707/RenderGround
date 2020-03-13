@@ -38,7 +38,7 @@ public:
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 	
 	void createUniformBuffers(VkDeviceSize bufferSize);
-
+	void createPreUniformBuffers(VkDeviceSize bufferSize);
 	void updateUniformBuffer();
 	VkDeviceMemory GetUboMemory();
 	VkDeviceMemory GetPreUboMemory();

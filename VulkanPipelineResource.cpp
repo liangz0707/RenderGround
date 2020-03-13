@@ -20,8 +20,12 @@ void VulkanPipelineResource::createUniformBuffers(VkDeviceSize bufferSize)
 			uniformBuffers[i],
 			uniformBuffersMemory[i]);
 	}
+}
 
-	bufferSize = sizeof(PreEntityUniformBufferObject);
+void VulkanPipelineResource::createPreUniformBuffers(VkDeviceSize bufferSize)
+{
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	preEntityUniformBuffers.resize(RM->GetFramebuffer()->GetFrameBufferSize());
 	preEntityUniformBuffersMemory.resize(RM->GetFramebuffer()->GetFrameBufferSize());
 
@@ -34,6 +38,7 @@ void VulkanPipelineResource::createUniformBuffers(VkDeviceSize bufferSize)
 			preEntityUniformBuffersMemory[i]);
 	}
 }
+
 
 void VulkanPipelineResource::updateUniformBuffer() {
 
@@ -49,7 +54,7 @@ void VulkanPipelineResource::updateUniformBuffer() {
 
 	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	ubo.proj = glm::perspective(glm::radians(45.0f), RM->GetFramebuffer()->GetFrameBufferExtent().width / (float)RM->GetFramebuffer()->GetFrameBufferExtent().height, 0.1f, 10.0f);
+	ubo.proj = glm::perspective(glm::radians(45.0f), RM->GetExtent().width / (float)RM->GetExtent().height, 0.1f, 10.0f);
 	/*
 	GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted.
 	*/

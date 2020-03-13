@@ -10,27 +10,22 @@ class VulkanRenderPass;
 class VulkanFramebuffer
 {
 public:
-	void createDepthResource(VkFormat format, VkExtent2D extent2D);
-	VkFramebuffer createFrameBuffer(std::array<VkImageView, 2> attachments, VkExtent2D swapChainExtent);
-	void createSwapChainFrameBuffers();
+	void createDepthResource(VulkanSwapChain* vulkanSwapChain);
+	
+	void createSwapChainFrameBuffers(VulkanSwapChain * vulkanSwapChain);
 	size_t GetFrameBufferSize()
 	{
 		return vVulkanFrameBuffer.size();
 	}
-	VkExtent2D GetFrameBufferExtent();
+
 	VkFramebuffer GetFrameBufferByIndex(int index)
 	{
 		return vVulkanFrameBuffer[index];
 	}
 
-	VulkanSwapChain* GetSwapChain()
-	{
-		return vulkanSwapChain;
-	}
 
 private:
-
-	VulkanSwapChain* vulkanSwapChain;
+	VkFramebuffer createFrameBuffer(std::array<VkImageView, 2> attachments, VkExtent2D swapChainExtent);
 	std::vector<VkFramebuffer> vVulkanFrameBuffer;
 	VulkanRenderPass* vulkanRenderPass;
 	VulkanDevice* vulkanDevice;
@@ -39,5 +34,6 @@ private:
 
 	VkImageView depthImageView;
 	VkDeviceMemory depthImageMemory;
+
 };
 

@@ -4,8 +4,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanApplication* vulkanInstance, VulkanDevice
 {
 	this->vulkanInstance = vulkanInstance;
 	this->vulkanDevice = vulkanDevice;
-	createSwapChain();
-	createImageViews();
+
 }
 
 VkImageView VulkanSwapChain::GetSwapChainImageViewByIndex(int index)
@@ -162,7 +161,7 @@ void  VulkanSwapChain::createSwapChain() {
 
 }
 
-void VulkanSwapChain::createImageViews() {
+void VulkanSwapChain::createSwapChainImageViews() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	swapChainImageViews.resize(swapChainImages.size());
 	for (size_t i = 0; i < swapChainImages.size(); i++) {

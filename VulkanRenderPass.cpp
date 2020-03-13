@@ -3,13 +3,7 @@
 VulkanRenderPass::VulkanRenderPass(VulkanPipelineResource * vulkanPipelineResource)
 {
 
-	createRenderPass();
-	createDescriptorSetLayout();
-	createDescriptorPool();
-	createDescriptorSets(
-		vulkanPipelineResource->GetUniformBuffers(),
-		vulkanPipelineResource->GetPreEntityUniformBuffers());
-	createGraphicPipelines();
+
 }
 
 VkRenderPass VulkanRenderPass::GetInstance()
@@ -17,10 +11,12 @@ VkRenderPass VulkanRenderPass::GetInstance()
 	return renderPass;
 }
 
-void VulkanRenderPass::createDescriptorSets(std::vector<VkBuffer> uniformBuffers, std::vector<VkBuffer> preEntityUniformBuffers) {
+void VulkanRenderPass::createDescriptorSets(VulkanFramebuffer* vulkanFramebuffer,
+	std::vector<VkBuffer> uniformBuffers, 
+	std::vector<VkBuffer> preEntityUniformBuffers) {
 	
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	size_t layoutsSize = vulkanFramebuffer->GetFrameBufferSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
 	std::vector<VkDescriptorSetLayout> layouts(layoutsSize, descriptorSetLayout);
@@ -159,7 +155,7 @@ void VulkanRenderPass::createRenderPass() {
 	
 	VkAttachmentDescription colorAttachment = {};
 	//The format of the color attachment should match the format of the swap chain image
-	colorAttachment.format = RM->GetFramebuffer()->GetSwapChain()->GetSwapChainImageFormat();
+	colorAttachment.format = RM->GetSwapChain()->GetSwapChainImageFormat();
 	//we're not doing anything with multisampling yet, so we'll stick to 1 sample.
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	//下面两项分别表示渲染开始前和渲染结束后

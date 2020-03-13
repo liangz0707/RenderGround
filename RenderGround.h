@@ -6,6 +6,17 @@
 #include "VulkanPipelineResource.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanResourceManager.h"
+#include "VulkanRenderPass.h"
+#include "VulkanFramebuffer.h"
+#include "VulkanTestRendering.h"
+#include "VulkanSceneManager.h"
+#include "VulkanCommandBuffer.h"
+
+class VulkanTestRendering;
+class VulkanRenderPass;
+class VulkanFramebuffer;
+class VulkanSceneManager;
+class VulkanCommandBuffer;
 
 class RenderGround
 {

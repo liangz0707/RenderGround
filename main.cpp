@@ -1,5 +1,6 @@
 
 #include "Utility.h"
+#include "RenderGround.h"
 
 
 
@@ -1636,30 +1637,30 @@ private:
 
 	void initVulkan() {
 
-		createInstance();
-		createSurface();
-		pickPhysicalDevice();
-		createLogicalDevice();
-		createSwapChain();
-		createImageViews();
-		createRenderPass();
-		createDescriptorSetLayout();
-		createGraphicsPipeline();
-		createDepthResources();
-		createFramebuffers();
-		createCommandPool();  
+		createInstance();//
+		createSurface();//
+		pickPhysicalDevice();//
+		createLogicalDevice();//
+		createSwapChain();//
+		createImageViews();//
+		createRenderPass();//
+		createDescriptorSetLayout();//
+		createGraphicsPipeline();//
+		createDepthResources();//
+		createFramebuffers();//
+		createCommandPool();  //
 		createTextureImage(); 
 		createTextureImageView();
 		createTextureSampler();
-		//Utility::loadModel(MODEL_PATH,vertices,indices);
-		createVertexBuffer();
-		createIndexBuffer();
-		createUniformBuffers();
-		createDescriptorPool();
-		createDescriptorSets();
-		createCommandBuffers();
+		//Utility::loadModel(MODEL_PATH,vertices,indices); //
+		createVertexBuffer();//
+		createIndexBuffer();//
+		createUniformBuffers();//
+		createDescriptorPool();//
+		createDescriptorSets();//
+		createCommandBuffers();//
 		//createSemaphores();
-		createSyncObjects();
+		createSyncObjects();//
 	}
 
 	
@@ -2051,6 +2052,7 @@ private:
 
 };
 
+/*
 
 int main() {
 	HelloTriangleApplication app;
@@ -2059,6 +2061,20 @@ int main() {
 		app.run();
 	}
 	catch (const std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
+*/
+int main() {
+	RenderGround* app = new RenderGround();
+
+	try {
+		app->run();
+	}
+	catch (const std::exception & e) {
 		std::cerr << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}

@@ -4,7 +4,6 @@
 VulkanDevice::VulkanDevice(VulkanApplication *vulkanInstance)
 {
 	this->vulkanInstance = vulkanInstance;
-	createLogicalDevice();
 }
 
 void VulkanDevice::createLogicalDevice() {

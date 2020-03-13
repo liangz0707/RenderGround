@@ -4,11 +4,14 @@
 #include "VulkanSwapChain.h"
 #include "VulkanGraphicPipeline.h"
 #include "VulkanPipelineResource.h"
+#include "VulkanFramebuffer.h"
+
+class VulkanFramebuffer;
 
 class VulkanSwapChain;
 class VulkanGraphicPipeline;
 class VulkanPipelineResource;
-
+	
 class VulkanRenderPass
 {
 private:
@@ -29,7 +32,9 @@ public :
 	void createGraphicPipelines();
 	void createDescriptorSetLayout();
 	void createDescriptorPool();
-	void createDescriptorSets(std::vector<VkBuffer> uniformBuffers, std::vector<VkBuffer> preEntityUniformBuffers);
+	void createDescriptorSets(VulkanFramebuffer* vulkanFramebuffer,
+		std::vector<VkBuffer> uniformBuffers, 
+		std::vector<VkBuffer> preEntityUniformBuffers);
 	
 	VkDescriptorSet GetDescriptorSetByIndex(int i)
 	{

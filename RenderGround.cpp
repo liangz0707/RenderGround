@@ -1,25 +1,80 @@
 #include "RenderGround.h"
 
+RenderGround::RenderGround()
+{
+}
+
 void RenderGround::run()
 {
 	VulkanApplication* vulkanApplication = new VulkanApplication();
+	vulkanApplication->initWindow();
+	vulkanApplication->createInstance();
+	vulkanApplication->createSurface();
+	vulkanApplication->pickPhysicalDevice();
+
 	VulkanDevice* vulkanDevice = new VulkanDevice(vulkanApplication);
+	vulkanDevice->createLogicalDevice();
+
+	VulkanSwapChain* vulkanSwapChain = new VulkanSwapChain(vulkanApplication, vulkanDevice);
+
+	vulkanSwapChain->createSwapChain();
+	vulkanSwapChain->createSwapChainImageViews();
 
 	VulkanResourceManager::SetResourceManager(vulkanDevice,
-		vulkanApplication);
+		vulkanApplication, vulkanSwapChain);
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
+	VulkanFramebuffer* vulkanFrameBuffer = new VulkanFramebuffer();
+
+	vulkanFrameBuffer->createDepthResource(vulkanSwapChain);
+	vulkanFrameBuffer->createSwapChainFrameBuffers(vulkanSwapChain);
+
+	RM->SetFramebuffer(vulkanFrameBuffer);
+	RM->createCommandPool();
+	RM->createSyncObjects();
+
+	VulkanPipelineResource* vulkanPipelineResource = new VulkanPipelineResource();
+	vulkanPipelineResource->createUniformBuffers(sizeof(UniformBufferObject));
+	vulkanPipelineResource->createPreUniformBuffers(sizeof(UniformBufferObject));
+
+	VulkanRenderPass* vulkanRenderPass = new VulkanRenderPass(vulkanPipelineResource);
+
+	vulkanRenderPass->createRenderPass();
+	vulkanRenderPass->createDescriptorSetLayout();
+	vulkanRenderPass->createDescriptorPool();
+	vulkanRenderPass->createDescriptorSets(
+		vulkanFrameBuffer,
+		vulkanPipelineResource->GetUniformBuffers(),
+		vulkanPipelineResource->GetPreEntityUniformBuffers());
+	vulkanRenderPass->createGraphicPipelines();
+
+
+	VulkanModel* vulkanModel = new VulkanModel();
+	VulkanSceneManager* vulkanSceneManager = new VulkanSceneManager();
+	vulkanSceneManager->loadRenderModel(vulkanModel);
+
+	size_t commandBufferSize = RM->GetFramebuffer()->GetFrameBufferSize();
+
+	VulkanFrameRenderCommandBuffer* vulkanCommandBuffer = new VulkanFrameRenderCommandBuffer(RM->GetCommandPool(), commandBufferSize);
+
+	VulkanTestRendering* vulkanRendering = new VulkanTestRendering(vulkanRenderPass);
+	vulkanRendering->SetSceneManager(vulkanSceneManager);
+	vulkanRendering->Config(vulkanCommandBuffer);
 	while (!glfwWindowShouldClose(vulkanApplication->GetWindow()))
 	{
 		glfwPollEvents();
 		drawFrame();
 	}
 
+	//clean();
+
 	vkDeviceWaitIdle(vulkanDevice->GetInstance());
 }
 
 void RenderGround::drawFrame()
 {
-	/*
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
 	uint32_t imageIndex;
@@ -28,7 +83,7 @@ void RenderGround::drawFrame()
 	VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		recreateSwapChain();
+		//recreateSwapChain();
 		return;
 	}
 	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -92,7 +147,7 @@ void RenderGround::drawFrame()
 	}
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-	*/
+	
 }
 
 void RenderGround::mainLoop() {
@@ -101,3 +156,5 @@ void RenderGround::mainLoop() {
 
 
 }
+
+

@@ -1,10 +1,13 @@
 #include "VulkanSceneManager.h"
 
+VulkanSceneManager::VulkanSceneManager()
+{
+
+}
 void VulkanSceneManager::loadRenderModel(VulkanModel* vulkanModel)
 {
 
 	VulkanRModel* vulkanRModel = new VulkanRModel();
-
 	VkBuffer vkIndexBuffer;
 	VkDeviceMemory vkIndexDeviceMemory;
 	VkBuffer vkVertexBuffer;

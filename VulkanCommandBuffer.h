@@ -27,7 +27,9 @@ public:
 
 	VkCommandBuffer VulkanCommandBegin(int index);
 	void VulkanCommandEnd(int index);
-	
+	int GetCommandBufferSize() {
+		return commandBuffers.size();
+	}
 private:
 	std::vector<VkCommandBuffer> commandBuffers;
 	VkCommandPool commandPool;

@@ -15,7 +15,7 @@ VkFramebuffer VulkanFramebuffer::createFrameBuffer(std::array<VkImageView, 2> at
 	return vkFramebuffer;
 }
 
-void VulkanFramebuffer::createSwapChainFrameBuffers() {
+void VulkanFramebuffer::createSwapChainFrameBuffers(VulkanSwapChain * vulkanSwapChain) {
 	vVulkanFrameBuffer.resize(vulkanSwapChain->GetSwapChainImageSize());
 	for (int i = 0; i < vulkanSwapChain->GetSwapChainImageSize(); i++)
 	{
@@ -27,17 +27,13 @@ void VulkanFramebuffer::createSwapChainFrameBuffers() {
 		vVulkanFrameBuffer[i] = createFrameBuffer(attachments, vulkanSwapChain->GetSwapChainImageExtent());
 	}
 }
-VkExtent2D VulkanFramebuffer::GetFrameBufferExtent()
-{
-	return vulkanSwapChain->GetSwapChainImageExtent();
-}
-void VulkanFramebuffer::createDepthResource(VkFormat format, VkExtent2D extent2D)
+
+void VulkanFramebuffer::createDepthResource(VulkanSwapChain* vulkanSwapChain)
 { 
-	
 	VulkanResourceManager * RM = VulkanResourceManager::GetResourceManager();
-	RM->createImage(extent2D.width,
-		extent2D.height,
-		format,
+	RM->createImage(vulkanSwapChain->GetSwapChainImageExtent().width,
+		vulkanSwapChain->GetSwapChainImageExtent().height,
+		RM->findDepthFormat(),
 		VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
