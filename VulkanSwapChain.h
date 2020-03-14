@@ -24,6 +24,11 @@ private:
 public :
 	VulkanSwapChain(VulkanApplication* vulkanInstance, VulkanDevice* vulkanDevice);
 	void createSwapChain();
+	VkSwapchainKHR GetInstance()
+	{
+		return swapChain;
+	}
+	
 	void createSwapChainImageViews();
 	VkFormat GetSwapChainImageFormat();
 	VkExtent2D GetSwapChainImageExtent();

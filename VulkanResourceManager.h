@@ -4,6 +4,10 @@
 #include "VulkanApplication.h"
 #include "VulkanFramebuffer.h"
 #include "VulkanSwapChain.h"
+#include "VulkanRenderState.h"
+#include "VulkanCommandBuffer.h"
+
+class VulkanFrameRenderCommandBuffer;
 class VulkanSwapChain;
 class VulkanFramebuffer;
 
@@ -16,15 +20,15 @@ public:
 		return vulkanResourceManager;
 	}
 
-	static void SetResourceManager(VulkanDevice* vulkanDevice, VulkanApplication* vulkanInstance,VulkanSwapChain* vulkanSwapChain) {
+	static void SetResourceManager(VulkanDevice* vulkanDevice, VulkanApplication* vulkanInstance) {
 		if (vulkanResourceManager == nullptr)
-			vulkanResourceManager = new VulkanResourceManager(vulkanDevice, vulkanInstance, vulkanSwapChain);
+			vulkanResourceManager = new VulkanResourceManager(vulkanDevice, vulkanInstance);
 	}
 	VkFramebuffer createFramebuffer(VkFramebufferCreateInfo* framebufferInfo);
 
 	void SetFramebuffer(VulkanFramebuffer*);
+	void SetSwapChain(VulkanSwapChain*);
 	VulkanFramebuffer* GetFramebuffer();
-	void SetSwapChain(VulkanSwapChain* vulkanSwapChain);
 	VulkanSwapChain* GetSwapChain();
 
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags flags);
@@ -41,7 +45,7 @@ public:
 		VkDeviceMemory& imageMemory);
 
 	void createSampler(VkSamplerCreateInfo* samplerInfo, VkSampler* sampler);
-
+	VkShaderModule createShaderModule(const std::vector<char>& code);
 	void destroyImage(VkImage);
 	void allocCommandBuffer(VkCommandBufferAllocateInfo* allocInfo, VkCommandBuffer* commandBuffer);
 	void destroyBuffer(VkBuffer);
@@ -62,7 +66,9 @@ public:
 	void mapMemory(VkDeviceMemory, VkDeviceSize, void** data);
 	void unMapMemory(VkDeviceMemory);
 
-	void createSyncObjects();
+	VkSemaphore CreateSemaphore(VkSemaphoreCreateInfo* vkSemaphoreCreateInfo);
+	VkFence CreateFence(VkFenceCreateInfo* vkFenceCreateInfo);
+
 	VulkanDevice * GetDevice()
 	{
 		return vulkanDevice;
@@ -71,33 +77,50 @@ public:
 	VkExtent2D GetExtent();
 
 
+	void CreateRenderState() {
+		vulkanRenderState = new VulkanRenderState();
+	}
+
 	// 同步互斥操作：
+	void SyncWaitForFences(VkFence vkFence);
 
+	VulkanRenderState* GetRenderState()
+	{
+		return vulkanRenderState;
+	}
 
+	void CreateSync();
+	void WaitForFences();
+	void ResetFence();
 
+	uint32_t AcquireNextImageKHR();
+	void CheckPrivousFrameFinishend(uint32_t imageIndex);
+
+	//
+	void PresentQueueSubmit(uint32_t imageIndex);
+	void GraphicQueueSubmit(VkCommandBuffer);
+
+	void UpdateRenderState();
+		
 private:
 	VulkanResourceManager(
 		VulkanDevice* vulkanDevice, 
-		VulkanApplication* vulkanInstance,
-		VulkanSwapChain* vulkanSwapChain);
+		VulkanApplication* vulkanInstance);
 
 	static VulkanResourceManager* vulkanResourceManager;
 	// 同时运作的渲染的图像
-	const int MAX_FRAMES_IN_FLIGHT = 2;
-	// 下面的两种信号量是用来做GPU-GPU同步的
-	// 图像已经从SwapChain获取可用于渲染
-	std::vector<VkSemaphore> imageAvailableSemaphores;
-	// 图像渲染完成可用于显示
-	std::vector<VkSemaphore> renderFinishedSemaphores;
-	// 下面的一个信号量是进行CPU-GPU同步的
-	std::vector<VkFence> inFlightFences;
-	std::vector<VkFence> imagesInFlight;
 
+	VulkanRenderState* vulkanRenderState;
 	VulkanSwapChain* vulkanSwapChain;
 	VulkanFramebuffer* vulkanFramebuffer;
 	VkCommandPool commandPool;
 	VulkanDevice* vulkanDevice;
 	VulkanApplication* vulkanInstance;
+
+	std::vector<VkSemaphore> imageAvailableSemaphores;
+	std::vector<VkSemaphore> renderFinishedSemaphores;
+	std::vector<VkFence> inFlightFences;
+	std::vector<VkFence> imagesInFlight;
 
 };
 

@@ -11,6 +11,11 @@ VkRenderPass VulkanRenderPass::GetInstance()
 	return renderPass;
 }
 
+VkPipelineLayout VulkanRenderPass::GetPipelineLayout()
+{
+	return vulkanGraphicPipeline->GetPipelineLayout();
+}
+
 void VulkanRenderPass::createDescriptorSets(VulkanFramebuffer* vulkanFramebuffer,
 	std::vector<VkBuffer> uniformBuffers, 
 	std::vector<VkBuffer> preEntityUniformBuffers) {
@@ -48,7 +53,7 @@ void VulkanRenderPass::createDescriptorSets(VulkanFramebuffer* vulkanFramebuffer
 		imageInfo.imageView = textureImageView;
 		imageInfo.sampler = textureSampler;
 		*/
-		std::array<VkWriteDescriptorSet, 3> descriptorWrites = {};
+		std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
 
 
 		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -150,7 +155,6 @@ void VulkanRenderPass::createDescriptorSetLayout() {
 void VulkanRenderPass::createRenderPass() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 	
 	VkAttachmentDescription colorAttachment = {};
@@ -248,6 +252,25 @@ void VulkanRenderPass::createRenderPass() {
 
 void VulkanRenderPass::createGraphicPipelines()
 {
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+
 	vulkanGraphicPipeline = new VulkanGraphicPipeline();
-	//vulkanGraphicPipeline->createGraphicsPipeline();
+
+	VkShaderModule vertShaderModule;
+	VkShaderModule fragShaderModule;
+
+	auto vertShaderCode = Utility::readFile("vert.spv");
+	auto fragShaderCode = Utility::readFile("frag.spv");
+
+	vertShaderModule = RM->createShaderModule(vertShaderCode);
+	fragShaderModule = RM->createShaderModule(fragShaderCode);
+
+	vulkanGraphicPipeline->createGraphicsPipeline(vertShaderModule,
+		fragShaderModule,
+		RM->GetExtent(),
+		&descriptorSetLayout,
+		renderPass);
+
 }
+

@@ -56,7 +56,8 @@ void VulkanTestRendering::Render(VkCommandBuffer commandBuffer,
 	// 绑定其中的一个subpass的graphicsPipeline的状态。
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetGraphicPipeline()->GetInstance());
 
-	for (auto staticModel : vulkanSceneManager->GetStaticModel())
+	std::vector<VulkanRModel*> vulkanModels = vulkanSceneManager->GetStaticModel();
+	for (VulkanRModel * staticModel : vulkanModels)
 	{
 		VkBuffer vertexBuffers[] = { staticModel->GetVertexBuffer() };
 		VkDeviceSize offsets[] = { 0 };

@@ -16,7 +16,6 @@ public:
 		VkShaderModule fragShaderModule,
 		VkExtent2D swapChainExtent,
 		VkDescriptorSetLayout* descriptorSetLayout,
-		VkPipelineLayout pipelineLayout,
 		VkRenderPass renderPass);
 
 	VkPipeline GetInstance()
@@ -24,8 +23,15 @@ public:
 		return graphicsPipeline;
 	}
 
+	VkPipelineLayout GetPipelineLayout()
+	{
+		return vkPipelineLayout;
+	}
+	
+
 private:
 	VkPipeline graphicsPipeline;
+	VkPipelineLayout vkPipelineLayout;
 };
 
 

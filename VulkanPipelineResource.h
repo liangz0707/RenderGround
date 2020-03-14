@@ -43,11 +43,6 @@ public:
 	VkDeviceMemory GetUboMemory();
 	VkDeviceMemory GetPreUboMemory();
 
-	VkCommandPool GetCommandPool()
-	{
-		return commandPool;
-	}
-
 	std::vector<VkBuffer> GetUniformBuffers()
 	{
 		return uniformBuffers;
@@ -66,7 +61,6 @@ public:
 private:
 	VulkanSceneManager* vulkanSceneManager;
 	int imageIndex;
-	VkCommandPool commandPool;
 	VkSampler textureSampler;
 	std::vector<VkBuffer> uniformBuffers;
 	std::vector<VkDeviceMemory> uniformBuffersMemory;

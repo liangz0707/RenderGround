@@ -25,9 +25,14 @@ public:
 	VulkanFrameRenderCommandBuffer(VkCommandPool commandPool, size_t commandBufferSize);
 	~VulkanFrameRenderCommandBuffer();
 
+	VkCommandBuffer GetCommandBufferByIndex(int index)
+	{
+		return commandBuffers[index];
+	}
+
 	VkCommandBuffer VulkanCommandBegin(int index);
 	void VulkanCommandEnd(int index);
-	int GetCommandBufferSize() {
+	size_t GetCommandBufferSize() {
 		return commandBuffers.size();
 	}
 private:

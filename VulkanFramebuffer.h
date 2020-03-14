@@ -12,7 +12,7 @@ class VulkanFramebuffer
 public:
 	void createDepthResource(VulkanSwapChain* vulkanSwapChain);
 	
-	void createSwapChainFrameBuffers(VulkanSwapChain * vulkanSwapChain);
+	void createSwapChainFrameBuffers(VulkanSwapChain * vulkanSwapChain, VulkanRenderPass* vulkanRenderPass);
 	size_t GetFrameBufferSize()
 	{
 		return vVulkanFrameBuffer.size();
@@ -25,9 +25,9 @@ public:
 
 
 private:
-	VkFramebuffer createFrameBuffer(std::array<VkImageView, 2> attachments, VkExtent2D swapChainExtent);
+	VkFramebuffer createFrameBuffer(std::array<VkImageView, 2> attachments,
+		VkExtent2D swapChainExtent, VulkanRenderPass* vulkanRenderPass);
 	std::vector<VkFramebuffer> vVulkanFrameBuffer;
-	VulkanRenderPass* vulkanRenderPass;
 	VulkanDevice* vulkanDevice;
 
 	VkImage depthImage;

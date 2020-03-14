@@ -15,31 +15,39 @@ void RenderGround::run()
 	VulkanDevice* vulkanDevice = new VulkanDevice(vulkanApplication);
 	vulkanDevice->createLogicalDevice();
 
+	VulkanResourceManager::SetResourceManager(vulkanDevice, vulkanApplication);
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+
 	VulkanSwapChain* vulkanSwapChain = new VulkanSwapChain(vulkanApplication, vulkanDevice);
 
 	vulkanSwapChain->createSwapChain();
 	vulkanSwapChain->createSwapChainImageViews();
 
-	VulkanResourceManager::SetResourceManager(vulkanDevice,
-		vulkanApplication, vulkanSwapChain);
-	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	RM->SetSwapChain(vulkanSwapChain);
 
-	VulkanFramebuffer* vulkanFrameBuffer = new VulkanFramebuffer();
-
-	vulkanFrameBuffer->createDepthResource(vulkanSwapChain);
-	vulkanFrameBuffer->createSwapChainFrameBuffers(vulkanSwapChain);
-
-	RM->SetFramebuffer(vulkanFrameBuffer);
-	RM->createCommandPool();
-	RM->createSyncObjects();
 
 	VulkanPipelineResource* vulkanPipelineResource = new VulkanPipelineResource();
-	vulkanPipelineResource->createUniformBuffers(sizeof(UniformBufferObject));
-	vulkanPipelineResource->createPreUniformBuffers(sizeof(UniformBufferObject));
 
 	VulkanRenderPass* vulkanRenderPass = new VulkanRenderPass(vulkanPipelineResource);
 
 	vulkanRenderPass->createRenderPass();
+
+
+	VulkanFramebuffer* vulkanFrameBuffer = new VulkanFramebuffer();
+	vulkanFrameBuffer->createDepthResource(vulkanSwapChain);
+	vulkanFrameBuffer->createSwapChainFrameBuffers(vulkanSwapChain, vulkanRenderPass);
+
+	RM->SetFramebuffer(vulkanFrameBuffer);
+
+	vulkanPipelineResource->createUniformBuffers(sizeof(UniformBufferObject));
+	vulkanPipelineResource->createPreUniformBuffers(sizeof(UniformBufferObject));
+
+
+
+	RM->createCommandPool();
+	RM->CreateRenderState();
+
 	vulkanRenderPass->createDescriptorSetLayout();
 	vulkanRenderPass->createDescriptorPool();
 	vulkanRenderPass->createDescriptorSets(
@@ -51,15 +59,19 @@ void RenderGround::run()
 
 	VulkanModel* vulkanModel = new VulkanModel();
 	VulkanSceneManager* vulkanSceneManager = new VulkanSceneManager();
+	vulkanSceneManager->SetPipelineResource(vulkanPipelineResource);
 	vulkanSceneManager->loadRenderModel(vulkanModel);
 
 	size_t commandBufferSize = RM->GetFramebuffer()->GetFrameBufferSize();
 
-	VulkanFrameRenderCommandBuffer* vulkanCommandBuffer = new VulkanFrameRenderCommandBuffer(RM->GetCommandPool(), commandBufferSize);
+	vulkanCommandBuffer = new VulkanFrameRenderCommandBuffer(RM->GetCommandPool(), commandBufferSize);
 
 	VulkanTestRendering* vulkanRendering = new VulkanTestRendering(vulkanRenderPass);
 	vulkanRendering->SetSceneManager(vulkanSceneManager);
 	vulkanRendering->Config(vulkanCommandBuffer);
+
+	RM->CreateSync();
+
 	while (!glfwWindowShouldClose(vulkanApplication->GetWindow()))
 	{
 		glfwPollEvents();
@@ -75,79 +87,36 @@ void RenderGround::drawFrame()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	
-	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+	//vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+	RM->WaitForFences();
+
 
 	uint32_t imageIndex;
-	//imageAvailableSemaphores在图像获取完成之后会变成signaled状态。，也是图像可以开始绘制的时间点。
-	//最后一个参数用来获取swapchain当中的image，用于指定对应的commandbuffer
-	VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+	//VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+	imageIndex = RM->AcquireNextImageKHR();
 
-	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		//recreateSwapChain();
-		return;
-	}
-	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-		throw std::runtime_error("failed to acquire swap chain image!");
-	}
-
+	/*
 	// Check if a previous frame is using this image (i.e. there is its fence to wait on)
 	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 		vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
 	}
 	// Mark the image as now being in use by this frame
 	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+	*/
+	RM->CheckPrivousFrameFinishend(imageIndex);
 
-	updateUniformBuffer(imageIndex);
-
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	// 等待获取图像完成的信号。
-	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
-	// 在何时进入等待状态。
-	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = waitSemaphores;
-	submitInfo.pWaitDstStageMask = waitStages;
-
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
-
-	VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = signalSemaphores;
+	//updateUniformBuffer(imageIndex);
 
 	//manually need to restore the fence to the unsignaled state by resetting it with the vkResetFences call.
-	vkResetFences(device, 1, &inFlightFences[currentFrame]);
+	//vkResetFences(device, 1, &inFlightFences[currentFrame]);
+	RM->ResetFence();
 
-	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
-		throw std::runtime_error("failed to submit draw command buffer!");
-	}
+	RM->GraphicQueueSubmit(vulkanCommandBuffer->GetCommandBufferByIndex(imageIndex));
 
-	VkPresentInfoKHR presentInfo = {};
-	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	RM->PresentQueueSubmit(imageIndex);
 
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = signalSemaphores;
+	RM->UpdateRenderState();
 
-	VkSwapchainKHR swapChains[] = { swapChain };
-	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = swapChains;
-	presentInfo.pImageIndices = &imageIndex;
-	presentInfo.pResults = nullptr; // Optional
-
-	result = vkQueuePresentKHR(presentQueue, &presentInfo);
-	vkQueueWaitIdle(presentQueue);
-
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
-		framebufferResized = false;
-		recreateSwapChain();
-	}
-	else if (result != VK_SUCCESS) {
-		throw std::runtime_error("failed to present swap chain image!");
-	}
-
-	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-	
 }
 
 void RenderGround::mainLoop() {

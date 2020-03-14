@@ -20,7 +20,6 @@ private:
 	VkDescriptorPool descriptorPool;
 	std::vector<VkDescriptorSet> descriptorSets;
 	VkDescriptorSetLayout descriptorSetLayout;
-	VkPipelineLayout pipelineLayout;
 	VulkanGraphicPipeline* vulkanGraphicPipeline;
 
 	VulkanPipelineResource* vulkanPipelineResource;
@@ -46,9 +45,6 @@ public :
 		return vulkanGraphicPipeline;
 	}
 
-	VkPipelineLayout GetPipelineLayout()
-	{
-		return pipelineLayout;
-	}
+	VkPipelineLayout GetPipelineLayout();
 };
 

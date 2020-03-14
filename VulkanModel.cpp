@@ -5,6 +5,6 @@
 
 VulkanModel::VulkanModel()
 {
-	Utility::loadModel(MODEL_PATH, vertices, indices);
-	pixels = Utility::loadImage(TEXTURE_PATH, texWidth, texHeight, texChannel);
+	//Utility::loadModel(MODEL_PATH, vertices, indices);
+	//pixels = Utility::loadImage(TEXTURE_PATH, texWidth, texHeight, texChannel);
 }

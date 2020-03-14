@@ -1,6 +1,8 @@
 #include "VulkanFramebuffer.h"
 
-VkFramebuffer VulkanFramebuffer::createFrameBuffer(std::array<VkImageView, 2> attachments, VkExtent2D swapChainExtent) {
+VkFramebuffer VulkanFramebuffer::createFrameBuffer(std::array<VkImageView, 2> attachments,
+	VkExtent2D swapChainExtent
+	, VulkanRenderPass* vulkanRenderPass) {
 	VkFramebuffer vkFramebuffer;
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	VkFramebufferCreateInfo createInfo = {};
@@ -15,7 +17,7 @@ VkFramebuffer VulkanFramebuffer::createFrameBuffer(std::array<VkImageView, 2> at
 	return vkFramebuffer;
 }
 
-void VulkanFramebuffer::createSwapChainFrameBuffers(VulkanSwapChain * vulkanSwapChain) {
+void VulkanFramebuffer::createSwapChainFrameBuffers(VulkanSwapChain * vulkanSwapChain, VulkanRenderPass* vulkanRenderPass) {
 	vVulkanFrameBuffer.resize(vulkanSwapChain->GetSwapChainImageSize());
 	for (int i = 0; i < vulkanSwapChain->GetSwapChainImageSize(); i++)
 	{
@@ -24,7 +26,7 @@ void VulkanFramebuffer::createSwapChainFrameBuffers(VulkanSwapChain * vulkanSwap
 			vulkanSwapChain->GetSwapChainImageViewByIndex(i) , 
 			depthImageView 
 		};
-		vVulkanFrameBuffer[i] = createFrameBuffer(attachments, vulkanSwapChain->GetSwapChainImageExtent());
+		vVulkanFrameBuffer[i] = createFrameBuffer(attachments, vulkanSwapChain->GetSwapChainImageExtent(), vulkanRenderPass);
 	}
 }
 

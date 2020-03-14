@@ -154,7 +154,7 @@ private:
 #ifndef INFO
 		std::cout << "Instance Required Extension:" << std::endl;
 
-		for (int i = 0; i < glfwExtensionCount; i++)
+		for (size_t i = 0; i < glfwExtensionCount; i++)
 		{
 			std::cout << "\t" << glfwExtensions[i] << std::endl;
 		}

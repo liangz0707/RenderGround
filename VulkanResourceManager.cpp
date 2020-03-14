@@ -5,12 +5,10 @@ VulkanResourceManager* VulkanResourceManager::vulkanResourceManager = NULL;
 
 
 VulkanResourceManager::VulkanResourceManager(VulkanDevice* vulkanDevice,
-	VulkanApplication* vulkanInstance,
-	VulkanSwapChain* vulkanSwapChain)
+	VulkanApplication* vulkanInstance)
 {
 	this->vulkanDevice = vulkanDevice;
 	this->vulkanInstance = vulkanInstance;
-	this->vulkanSwapChain = vulkanSwapChain;
 }
 
 VkFormat VulkanResourceManager::findDepthFormat() {
@@ -25,46 +23,22 @@ VkExtent2D VulkanResourceManager::GetExtent()
 {
 	return vulkanSwapChain->GetSwapChainImageExtent();
 }
-void VulkanResourceManager::createSyncObjects() {
-	// 同步一个Flight内部的
-	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	// 同步不同的FLIGHT之间的
-	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-	imagesInFlight.resize(vulkanFramebuffer->GetFrameBufferSize(), VK_NULL_HANDLE);
-
-	VkSemaphoreCreateInfo semaphoreInfo = {};
-	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-	VkFenceCreateInfo fenceInfo = {};
-	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	//by default, fences are created in the unsignaled state. 
-	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		if (vkCreateSemaphore(vulkanDevice->GetInstance(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-			vkCreateSemaphore(vulkanDevice->GetInstance(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
-			vkCreateFence(vulkanDevice->GetInstance(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
-
-			throw std::runtime_error("failed to create synchronization objects for a frame!");
-		}
-	}
-}
 
 void VulkanResourceManager::SetFramebuffer(VulkanFramebuffer* vulkanFramebuffer)
 {
 	this->vulkanFramebuffer = vulkanFramebuffer;
 }
 
+void VulkanResourceManager::SetSwapChain(VulkanSwapChain* vulkanSwapChain)
+{
+	this->vulkanSwapChain = vulkanSwapChain;
+
+}
 VulkanFramebuffer* VulkanResourceManager::GetFramebuffer()
 {
 	return vulkanFramebuffer;
 }
 
-void VulkanResourceManager::SetSwapChain(VulkanSwapChain* vulkanSwapChain)
-{
-	this->vulkanSwapChain = vulkanSwapChain;
-}
 
 VulkanSwapChain* VulkanResourceManager::GetSwapChain()
 {
@@ -106,12 +80,48 @@ QueueFamilyIndices VulkanResourceManager::findQueueFamilies() {
 
 void VulkanResourceManager::mapMemory(VkDeviceMemory memory, VkDeviceSize size, void** data)
 {
-	(vulkanDevice->GetInstance(), memory, 0, size, 0, data);
+	vkMapMemory(vulkanDevice->GetInstance(), memory, 0, size, 0, data);
 }
 
 void VulkanResourceManager::unMapMemory(VkDeviceMemory memory)
 {
 	vkUnmapMemory(vulkanDevice->GetInstance(), memory);
+}
+
+VkSemaphore VulkanResourceManager::CreateSemaphore(VkSemaphoreCreateInfo* vkSemaphoreCreateInfo)
+{
+	VkSemaphore vkSemaphore;
+
+	if (vkCreateSemaphore(vulkanDevice->GetInstance(), vkSemaphoreCreateInfo, nullptr, &vkSemaphore) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create synchronization objects for a frame!");
+	}
+	return vkSemaphore;
+}
+
+
+VkShaderModule VulkanResourceManager::createShaderModule(const std::vector<char>& code) {
+	VkShaderModuleCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	createInfo.codeSize = code.size();
+	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+	VkShaderModule shaderModule;
+	if (vkCreateShaderModule(vulkanDevice->GetInstance(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create shader module!");
+	}
+	return shaderModule;
+}
+
+VkFence VulkanResourceManager::CreateFence(VkFenceCreateInfo* vkFenceCreateInfo)
+{
+	VkFence vkFence;
+
+	if(vkCreateFence(vulkanDevice->GetInstance(), vkFenceCreateInfo, nullptr, &vkFence) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create synchronization objects for a frame!");
+	}
+		
+	return vkFence;
+
 }
 
 void VulkanResourceManager::createCommandPool()
@@ -286,4 +296,146 @@ VkImageView VulkanResourceManager::createImageView(VkImage image,
 
 	}
 	return imageView;
+}
+
+
+void VulkanResourceManager::SyncWaitForFences(VkFence vkFence)
+{
+	vkWaitForFences(vulkanDevice->GetInstance(), 1, &vkFence, VK_TRUE, UINT64_MAX);
+
+}
+void VulkanResourceManager::CreateSync() {
+
+	int maxFrameinFlight = vulkanRenderState->GetMaxFlightFrame();
+	// 同步一个Flight内部的
+	imageAvailableSemaphores.resize(maxFrameinFlight);
+	renderFinishedSemaphores.resize(maxFrameinFlight);
+	// 同步不同的FLIGHT之间的
+	inFlightFences.resize(maxFrameinFlight);
+	imagesInFlight.resize(vulkanFramebuffer->GetFrameBufferSize(), VK_NULL_HANDLE);
+
+	VkSemaphoreCreateInfo semaphoreInfo = {};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	VkFenceCreateInfo fenceInfo = {};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	//by default, fences are created in the unsignaled state. 
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	for (size_t i = 0; i < maxFrameinFlight; i++) {
+		imageAvailableSemaphores[i] = CreateSemaphore(&semaphoreInfo);
+		renderFinishedSemaphores[i] = CreateSemaphore(&semaphoreInfo);
+		inFlightFences[i] = CreateFence(&fenceInfo);
+	}
+}
+
+void VulkanResourceManager::WaitForFences()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	int currFrame = GetRenderState()->GetCurrentFrame();
+	RM->SyncWaitForFences(inFlightFences[currFrame]);
+}
+
+uint32_t VulkanResourceManager::AcquireNextImageKHR()
+{
+	uint32_t imageIndex;
+	int currFrame = vulkanRenderState->GetCurrentFrame();
+	VkResult result = vkAcquireNextImageKHR(vulkanDevice->GetInstance(),
+		vulkanSwapChain->GetInstance(), 
+		UINT64_MAX, 
+		imageAvailableSemaphores[currFrame],
+		VK_NULL_HANDLE, &imageIndex);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		//recreateSwapChain();
+		return imageIndex;
+	}
+
+	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+		throw std::runtime_error("failed to acquire swap chain image!");
+	}
+
+	return imageIndex;
+}
+
+void  VulkanResourceManager::CheckPrivousFrameFinishend(uint32_t imageIndex)
+{
+
+	int currFrame = vulkanRenderState->GetCurrentFrame();
+
+	// Check if a previous frame is using this image (i.e. there is its fence to wait on)
+	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+		vkWaitForFences(vulkanDevice->GetInstance(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+	}
+	// Mark the image as now being in use by this frame
+	imagesInFlight[imageIndex] = inFlightFences[currFrame];
+}
+
+void VulkanResourceManager::ResetFence()
+{
+	int currFrame = vulkanRenderState->GetCurrentFrame();
+	vkResetFences(vulkanDevice->GetInstance(), 1, &inFlightFences[currFrame]);
+
+}
+
+void VulkanResourceManager::GraphicQueueSubmit(VkCommandBuffer vkCommandBuffer)
+{
+
+	int currFrame = vulkanRenderState->GetCurrentFrame();
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	// 等待获取图像完成的信号。
+	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currFrame] };
+	// 在何时进入等待状态。
+	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = waitStages;
+
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &vkCommandBuffer;
+
+	VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currFrame] };
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
+
+	if (vkQueueSubmit(vulkanDevice->GetGraphicQueue(), 1, &submitInfo, inFlightFences[currFrame]) != VK_SUCCESS) {
+		throw std::runtime_error("failed to submit draw command buffer!");
+	}
+}
+
+void VulkanResourceManager::PresentQueueSubmit(uint32_t imageIndex)
+{
+	VkPresentInfoKHR presentInfo = {};
+
+	int currFrame = vulkanRenderState->GetCurrentFrame();
+	VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currFrame] };
+
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = signalSemaphores;
+
+	VkSwapchainKHR swapChains[] = { vulkanSwapChain->GetInstance() };
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapChains;
+	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pResults = nullptr; // Optional
+
+	VkResult result = vkQueuePresentKHR(vulkanDevice->GetPresentQueue(), &presentInfo);
+	vkQueueWaitIdle(vulkanDevice->GetPresentQueue());
+
+	int framebufferResized = false;
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+		framebufferResized = false;
+		//recreateSwapChain();
+	}
+	else if (result != VK_SUCCESS) {
+		throw std::runtime_error("failed to present swap chain image!");
+	}
+}
+
+void VulkanResourceManager::UpdateRenderState()
+{
+	vulkanRenderState->Update();
 }

@@ -10,7 +10,6 @@ void VulkanGraphicPipeline::createGraphicsPipeline(
 	VkShaderModule fragShaderModule,
 	VkExtent2D swapChainExtent,
 	VkDescriptorSetLayout* descriptorSetLayout,
-	VkPipelineLayout pipelineLayout,
 	VkRenderPass renderPass)
 {
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
@@ -135,7 +134,7 @@ void VulkanGraphicPipeline::createGraphicsPipeline(
 
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	RM->createPipelineLayout(&pipelineLayoutInfo, &pipelineLayout);
+	RM->createPipelineLayout(&pipelineLayoutInfo, &vkPipelineLayout);
 
 	VkPipelineDepthStencilStateCreateInfo depthStencil = {};
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -161,7 +160,7 @@ void VulkanGraphicPipeline::createGraphicsPipeline(
 	pipelineInfo.pDepthStencilState = &depthStencil; // Optional
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = nullptr; // Optional
-	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.layout = vkPipelineLayout;
 	
 	//接下来需要索引我们创建的RenderPass。
 	//然后指定这个GraphicsPipeline是哪个suboass使用的。

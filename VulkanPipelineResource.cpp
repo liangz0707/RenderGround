@@ -206,7 +206,9 @@ bool VulkanPipelineResource::hasStencilComponent(VkFormat format) {
 }
 
 void VulkanPipelineResource::copyBufferToBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
-	VulkanSingleTimeCommandBuffer* commandBuffer = new VulkanSingleTimeCommandBuffer(commandPool);
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	
+	VulkanSingleTimeCommandBuffer* commandBuffer = new VulkanSingleTimeCommandBuffer(RM->GetCommandPool());
 
 	VkBufferCopy copyRegion = {};
 	copyRegion.size = size;
@@ -217,7 +219,8 @@ void VulkanPipelineResource::copyBufferToBuffer(VkBuffer srcBuffer, VkBuffer dst
 
 void VulkanPipelineResource::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
 {
-	VulkanSingleTimeCommandBuffer *commandBuffer = new VulkanSingleTimeCommandBuffer(commandPool);
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VulkanSingleTimeCommandBuffer *commandBuffer = new VulkanSingleTimeCommandBuffer(RM->GetCommandPool());
 
 	VkBufferImageCopy region = {};
 	region.bufferOffset = 0;
@@ -296,7 +299,8 @@ void VulkanPipelineResource::createTextureImage(unsigned char* pixels,
 
 void VulkanPipelineResource::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
 
-	VulkanSingleTimeCommandBuffer* commandBuffer = new VulkanSingleTimeCommandBuffer(commandPool);
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VulkanSingleTimeCommandBuffer* commandBuffer = new VulkanSingleTimeCommandBuffer(RM->GetCommandPool());
 
 	VkImageMemoryBarrier barrier = {};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;

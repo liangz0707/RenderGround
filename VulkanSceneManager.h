@@ -17,6 +17,11 @@ public:
 	void loadRenderModel(VulkanModel* vulkanModel);
 	void unloadRenderModel(VulkanModel* vulkanModel);
 
+	void SetPipelineResource(VulkanPipelineResource* vulkanPipelineResource)
+	{
+		this->vulkanPipelineResource = vulkanPipelineResource;
+	}
+
 	std::vector<VulkanRModel*> GetStaticModel()
 	{
 		return vulkanModels;

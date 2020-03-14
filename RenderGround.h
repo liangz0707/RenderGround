@@ -11,12 +11,15 @@
 #include "VulkanTestRendering.h"
 #include "VulkanSceneManager.h"
 #include "VulkanCommandBuffer.h"
+#include "VulkanSync.h"
 
+class VulkanSync;
 class VulkanTestRendering;
 class VulkanRenderPass;
 class VulkanFramebuffer;
 class VulkanSceneManager;
-class VulkanCommandBuffer;
+class VulkanFrameRenderCommandBuffer;
+class VulkanSingleTimeCommandBuffer;
 
 class RenderGround
 {
@@ -25,5 +28,9 @@ public:
 	void run();
 	void drawFrame();
 	void mainLoop();
+
+public:
+	VulkanFrameRenderCommandBuffer* vulkanCommandBuffer;
+	VulkanSync* vulkanSync;
 };
 
