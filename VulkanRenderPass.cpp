@@ -203,7 +203,7 @@ void VulkanRenderPass::createRenderPass() {
 	renderPassInfo.pDependencies = &dependency;
 }
 
-void VulkanRenderPass::createGraphicPipelines()
+void VulkanRenderPass::createGraphicPipelines(VulkanPipelineResource *vulkanPipelineResource)
 {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
@@ -219,16 +219,12 @@ void VulkanRenderPass::createGraphicPipelines()
 	vertShaderModule = RM->createShaderModule(vertShaderCode);
 	fragShaderModule = RM->createShaderModule(fragShaderCode);
 
-	VkDescriptorSetLayout layouts[] = { 
-		uniformDescriptorSetLayout 
-	//	,vulkanpipeline
-	};
-	int layoutCount = 1;
-	vulkanGraphicPipeline->createGraphicsPipeline(vertShaderModule,
+	vulkanGraphicPipeline->createGraphicsPipeline(
+		vulkanPipelineResource,
+		vertShaderModule,
 		fragShaderModule,
 		RM->GetExtent(),
-		layouts,
-		layoutCount,
+		uniformDescriptorSetLayout,
 		renderPass);
 
 }

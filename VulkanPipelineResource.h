@@ -3,6 +3,8 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanResourceManager.h"
 #include "VulkanSceneManager.h"
+#include "VulkanPipelineResource.h"
+
 class VulkanSceneManager;
 class VulkanModel;
 
@@ -61,6 +63,11 @@ public:
 	VkSampler GetTextureSampler()
 	{
 		return textureSampler;
+	}
+
+	VkDescriptorSetLayout GetObjectSetLayout()
+	{
+		return objectDescriptorSetLayout;
 	}
 
 private:

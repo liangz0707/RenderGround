@@ -5,6 +5,10 @@
 #include "VulkanSwapChain.h"
 #include "VulkanRenderPass.h"
 #include "VulkanModel.h"
+
+#include "VulkanPipelineResource.h"
+
+class VulkanPipelineResource;
 class VulkanGraphicPipeline
 {
 
@@ -12,11 +16,11 @@ public:
 	VulkanGraphicPipeline();
 
 	void createGraphicsPipeline(
+		VulkanPipelineResource *vulkanPipelineResource,
 		VkShaderModule vertShaderModule,
 		VkShaderModule fragShaderModule,
 		VkExtent2D swapChainExtent,
-		VkDescriptorSetLayout* descriptorSetLayout,
-		int layoutCount,
+		VkDescriptorSetLayout descriptorSetLayout,
 		VkRenderPass renderPass);
 
 	VkPipeline GetInstance()

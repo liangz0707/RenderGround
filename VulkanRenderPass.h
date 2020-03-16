@@ -3,7 +3,6 @@
 #include "Utility.h"
 #include "VulkanSwapChain.h"
 #include "VulkanGraphicPipeline.h"
-#include "VulkanPipelineResource.h"
 #include "VulkanFramebuffer.h"
 
 class VulkanFramebuffer;
@@ -27,7 +26,7 @@ public :
 	VkRenderPass GetInstance();
 	
 	void createRenderPass();
-	void createGraphicPipelines();
+	void createGraphicPipelines(VulkanPipelineResource *vulkanPipelineResource);
 
 	void createUniformDescriptorSetLayout();
 	void createUniformDescriptorPool();

@@ -40,8 +40,6 @@ void RenderGround::run()
 	VulkanTexture* vulkanTexture = new VulkanTexture();
 	vulkanSceneManager = new VulkanSceneManager();
 
-
-
 	VulkanFramebuffer* vulkanFrameBuffer = new VulkanFramebuffer();
 	vulkanFrameBuffer->createDepthResource(vulkanSwapChain);
 	vulkanFrameBuffer->createSwapChainFrameBuffers(vulkanSwapChain, vulkanRenderPass);
@@ -57,9 +55,9 @@ void RenderGround::run()
 	vulkanPipelineResource->createObjectDescriptorSetLayout();
 	vulkanPipelineResource->createObjectDescriptorPool();
 
-	vulkanSceneManager->loadRenderModel(vulkanModel);
-	vulkanSceneManager->loadTexture(vulkanTexture);
 	vulkanSceneManager->SetPipelineResource(vulkanPipelineResource);
+	vulkanSceneManager->loadTexture(vulkanTexture);
+	vulkanSceneManager->loadRenderModel(vulkanModel);
 
 	vulkanRenderPass->createUniformDescriptorSetLayout();
 	vulkanRenderPass->createUniformDescriptorPool();
@@ -67,7 +65,7 @@ void RenderGround::run()
 		vulkanFrameBuffer,
 		vulkanPipelineResource->GetUniformBuffers());
 
-	vulkanRenderPass->createGraphicPipelines();
+	vulkanRenderPass->createGraphicPipelines(vulkanPipelineResource);
 
 
 

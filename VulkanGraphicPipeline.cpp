@@ -6,11 +6,11 @@ VulkanGraphicPipeline::VulkanGraphicPipeline()
 
 
 void VulkanGraphicPipeline::createGraphicsPipeline(
+	VulkanPipelineResource* vulkanPipelineResource,
 	VkShaderModule vertShaderModule, 
 	VkShaderModule fragShaderModule,
 	VkExtent2D swapChainExtent,
-	VkDescriptorSetLayout* descriptorSetLayout,
-	int layoutCount,
+	VkDescriptorSetLayout descriptorSetLayout,
 	VkRenderPass renderPass)
 {
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
@@ -125,11 +125,15 @@ void VulkanGraphicPipeline::createGraphicsPipeline(
 	dynamicState.dynamicStateCount = 2;
 	dynamicState.pDynamicStates = dynamicStates;
 
+	int layoutCount = 2;
+	VkDescriptorSetLayout setLayout[] = { 
+		descriptorSetLayout,
+	vulkanPipelineResource->GetObjectSetLayout()};
 	// 动态的设置uniform Value需要设置PipelineLayout
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutInfo.setLayoutCount = layoutCount; // Optional
-	pipelineLayoutInfo.pSetLayouts = descriptorSetLayout; // Optional
+	pipelineLayoutInfo.pSetLayouts = setLayout; // Optional
 	pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 	pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
