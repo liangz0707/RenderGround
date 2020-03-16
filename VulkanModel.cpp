@@ -5,6 +5,6 @@
 
 VulkanModel::VulkanModel()
 {
-	Utility::loadModel(MODEL_PATH, vertices, indices);
+	//Utility::loadModel(MODEL_PATH, vertices, indices);
 	
 }

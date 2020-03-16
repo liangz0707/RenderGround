@@ -61,21 +61,13 @@ void RenderGround::run()
 	vulkanSceneManager->SetPipelineResource(vulkanPipelineResource);
 
 	vulkanRenderPass->createUniformDescriptorSetLayout();
-	vulkanRenderPass->createTextureDescriptorSetLayout();
+	vulkanRenderPass->createObjectDescriptorSetLayout();
 	vulkanRenderPass->createUniformDescriptorPool();
-	vulkanRenderPass->createTextureDescriptorPool();
+	vulkanRenderPass->createObjectDescriptorPool();
 	vulkanRenderPass->createUniformDescriptorSets(
 		vulkanFrameBuffer,
-		vulkanPipelineResource->GetUniformBuffers(),
-		vulkanPipelineResource->GetPreEntityUniformBuffers());
+		vulkanPipelineResource->GetUniformBuffers());
 
-	
-	vulkanRenderPass->createTextureDescriptorSets(
-		vulkanFrameBuffer,
-		vulkanPipelineResource->GetTextureSampler(),
-		vulkanSceneManager->GetTextureByIndex(0)->GetImageView()
-		);
-		
 	vulkanRenderPass->createGraphicPipelines();
 
 

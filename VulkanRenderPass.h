@@ -18,11 +18,10 @@ private:
 
 	VkRenderPass renderPass;
 	VkDescriptorPool uniformDescriptorPool;
-	VkDescriptorPool textureDescriptorPool;
+	VkDescriptorPool objectDescriptorPool;
 	std::vector<VkDescriptorSet> uniformDescriptorSets;
-	std::vector<VkDescriptorSet> textureDescriptorSets;
 	VkDescriptorSetLayout uniformDescriptorSetLayout;
-	VkDescriptorSetLayout textureDescriptorSetLayout;
+	VkDescriptorSetLayout objectDescriptorSetLayout;
 	VulkanGraphicPipeline* vulkanGraphicPipeline;
 
 	VulkanPipelineResource* vulkanPipelineResource;
@@ -35,27 +34,24 @@ public :
 	void createRenderPass();
 	void createGraphicPipelines();
 	void createUniformDescriptorSetLayout();
-	void createTextureDescriptorSetLayout();
+	void createObjectDescriptorSetLayout();
 	void createUniformDescriptorPool();
-	void createTextureDescriptorPool();
+	void createObjectDescriptorPool();
 
 	void createUniformDescriptorSets(VulkanFramebuffer* vulkanFramebuffer,
-		std::vector<VkBuffer> uniformBuffers, 
-		std::vector<VkBuffer> preEntityUniformBuffers);
+		std::vector<VkBuffer> uniformBuffers);
 
-	void createTextureDescriptorSets(VulkanFramebuffer* vulkanFramebuffer,
-		VkSampler vkTextureSampler ,
+	VkDescriptorSet createObjectDescriptorSet(VkBuffer preEntityUniformBuffer,
+		VkSampler vkTextureSampler,
 		VkImageView vkTextureImageView);
+
+
 	
 	VkDescriptorSet GetUniformDescriptorSetByIndex(int i)
 	{
 		return uniformDescriptorSets[i];
 	}
 
-	VkDescriptorSet GetTextureDescriptorSetByIndex(int i)
-	{
-		return textureDescriptorSets[i];
-	}
 
 	VulkanGraphicPipeline *GetGraphicPipeline()
 	{
