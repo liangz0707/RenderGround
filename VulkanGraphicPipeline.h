@@ -16,6 +16,7 @@ public:
 		VkShaderModule fragShaderModule,
 		VkExtent2D swapChainExtent,
 		VkDescriptorSetLayout* descriptorSetLayout,
+		int layoutCount,
 		VkRenderPass renderPass);
 
 	VkPipeline GetInstance()

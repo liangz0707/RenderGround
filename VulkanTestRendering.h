@@ -13,7 +13,7 @@ class VulkanTestRendering
 {
 public:
 	VulkanTestRendering(VulkanRenderPass* vulkanRenderPass);
-	void Render(VkCommandBuffer commandBuffer, VkFramebuffer frameBuffer, VkExtent2D extent, VkDescriptorSet descriptorSet);
+	void Render(VkCommandBuffer commandBuffer, VkFramebuffer frameBuffer, VkExtent2D extent, VkDescriptorSet* descriptorSet,int descriptorSetCount);
 	void Config(VulkanFrameRenderCommandBuffer* vulkanCommandBuffer);
 	void SetSceneManager(VulkanSceneManager* vulkanSceneManager);
 

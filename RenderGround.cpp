@@ -2,10 +2,13 @@
 
 RenderGround::RenderGround()
 {
+
 }
 
 void RenderGround::run()
 {
+
+
 	VulkanApplication* vulkanApplication = new VulkanApplication();
 	vulkanApplication->initWindow();
 	vulkanApplication->createInstance();
@@ -27,11 +30,16 @@ void RenderGround::run()
 	RM->SetSwapChain(vulkanSwapChain);
 
 
-	VulkanPipelineResource* vulkanPipelineResource = new VulkanPipelineResource();
+	vulkanPipelineResource = new VulkanPipelineResource();
 
 	VulkanRenderPass* vulkanRenderPass = new VulkanRenderPass(vulkanPipelineResource);
 
 	vulkanRenderPass->createRenderPass();
+
+	VulkanModel* vulkanModel = new VulkanModel();
+	VulkanTexture* vulkanTexture = new VulkanTexture();
+	vulkanSceneManager = new VulkanSceneManager();
+
 
 
 	VulkanFramebuffer* vulkanFrameBuffer = new VulkanFramebuffer();
@@ -40,27 +48,37 @@ void RenderGround::run()
 
 	RM->SetFramebuffer(vulkanFrameBuffer);
 
+	vulkanPipelineResource->createTextureSampler();
 	vulkanPipelineResource->createUniformBuffers(sizeof(UniformBufferObject));
 	vulkanPipelineResource->createPreUniformBuffers(sizeof(UniformBufferObject));
-
 
 
 	RM->createCommandPool();
 	RM->CreateRenderState();
 
-	vulkanRenderPass->createDescriptorSetLayout();
-	vulkanRenderPass->createDescriptorPool();
-	vulkanRenderPass->createDescriptorSets(
+	vulkanSceneManager->loadRenderModel(vulkanModel);
+	vulkanSceneManager->loadTexture(vulkanTexture);
+	vulkanSceneManager->SetPipelineResource(vulkanPipelineResource);
+
+	vulkanRenderPass->createUniformDescriptorSetLayout();
+	vulkanRenderPass->createTextureDescriptorSetLayout();
+	vulkanRenderPass->createUniformDescriptorPool();
+	vulkanRenderPass->createTextureDescriptorPool();
+	vulkanRenderPass->createUniformDescriptorSets(
 		vulkanFrameBuffer,
 		vulkanPipelineResource->GetUniformBuffers(),
 		vulkanPipelineResource->GetPreEntityUniformBuffers());
+
+	
+	vulkanRenderPass->createTextureDescriptorSets(
+		vulkanFrameBuffer,
+		vulkanPipelineResource->GetTextureSampler(),
+		vulkanSceneManager->GetTextureByIndex(0)->GetImageView()
+		);
+		
 	vulkanRenderPass->createGraphicPipelines();
 
 
-	VulkanModel* vulkanModel = new VulkanModel();
-	VulkanSceneManager* vulkanSceneManager = new VulkanSceneManager();
-	vulkanSceneManager->SetPipelineResource(vulkanPipelineResource);
-	vulkanSceneManager->loadRenderModel(vulkanModel);
 
 	size_t commandBufferSize = RM->GetFramebuffer()->GetFrameBufferSize();
 
@@ -95,7 +113,7 @@ void RenderGround::drawFrame()
 	//VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 	imageIndex = RM->AcquireNextImageKHR();
 
-	/*
+	/*createGraphicsPipeline
 	// Check if a previous frame is using this image (i.e. there is its fence to wait on)
 	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 		vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
@@ -105,7 +123,8 @@ void RenderGround::drawFrame()
 	*/
 	RM->CheckPrivousFrameFinishend(imageIndex);
 
-	//updateUniformBuffer(imageIndex);
+	vulkanPipelineResource->updateUniformBuffer(imageIndex);
+	vulkanPipelineResource->updateTexture(imageIndex);
 
 	//manually need to restore the fence to the unsignaled state by resetting it with the vkResetFences call.
 	//vkResetFences(device, 1, &inFlightFences[currentFrame]);

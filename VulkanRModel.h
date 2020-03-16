@@ -35,9 +35,12 @@ public:
 		return indexSize;
 	}
 
+
+
 private:
 	VkImage textureImage;
 	VkImageView textureImageView;
+	VkDeviceMemory textureImageMemory;
 
 	size_t indexSize;
 	VkBuffer vertexBuffer;

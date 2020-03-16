@@ -11,12 +11,43 @@ VkRenderPass VulkanRenderPass::GetInstance()
 	return renderPass;
 }
 
+void VulkanRenderPass::createSampler()
+{
+	VkSamplerCreateInfo samplerInfo = {};
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = VK_FILTER_LINEAR;
+	samplerInfo.minFilter = VK_FILTER_LINEAR;
+
+	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+	samplerInfo.anisotropyEnable = VK_TRUE;
+	samplerInfo.maxAnisotropy = 16;
+
+	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+	samplerInfo.unnormalizedCoordinates = VK_FALSE;
+
+	samplerInfo.compareEnable = VK_FALSE;
+	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+
+	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	samplerInfo.mipLodBias = 0.0f;
+	samplerInfo.minLod = 0.0f;
+	samplerInfo.maxLod = 0.0f;
+
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	RM->createSampler(&samplerInfo, vkSampler);
+}
+
 VkPipelineLayout VulkanRenderPass::GetPipelineLayout()
 {
 	return vulkanGraphicPipeline->GetPipelineLayout();
 }
 
-void VulkanRenderPass::createDescriptorSets(VulkanFramebuffer* vulkanFramebuffer,
+void VulkanRenderPass::createUniformDescriptorSets(
+	VulkanFramebuffer* vulkanFramebuffer,
 	std::vector<VkBuffer> uniformBuffers, 
 	std::vector<VkBuffer> preEntityUniformBuffers) {
 	
@@ -24,15 +55,15 @@ void VulkanRenderPass::createDescriptorSets(VulkanFramebuffer* vulkanFramebuffer
 	size_t layoutsSize = vulkanFramebuffer->GetFrameBufferSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
-	std::vector<VkDescriptorSetLayout> layouts(layoutsSize, descriptorSetLayout);
+	std::vector<VkDescriptorSetLayout> layouts(layoutsSize, uniformDescriptorSetLayout);
 	VkDescriptorSetAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = descriptorPool;
+	allocInfo.descriptorPool = uniformDescriptorPool;
 	allocInfo.descriptorSetCount = static_cast<uint32_t>(layoutsSize);
 	allocInfo.pSetLayouts = layouts.data();
 
-	descriptorSets.resize(layoutsSize);
-	if (vkAllocateDescriptorSets(vkDevice, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+	uniformDescriptorSets.resize(layoutsSize);
+	if (vkAllocateDescriptorSets(vkDevice, &allocInfo, uniformDescriptorSets.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
 
@@ -53,28 +84,21 @@ void VulkanRenderPass::createDescriptorSets(VulkanFramebuffer* vulkanFramebuffer
 		imageInfo.imageView = textureImageView;
 		imageInfo.sampler = textureSampler;
 		*/
+		
 		std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
 
 
 		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[0].dstSet = descriptorSets[i];
+		descriptorWrites[0].dstSet = uniformDescriptorSets[i];
 		descriptorWrites[0].dstBinding = 0;
 		descriptorWrites[0].dstArrayElement = 0;
 		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		descriptorWrites[0].descriptorCount = 1;
 		descriptorWrites[0].pBufferInfo = &bufferInfo;
-		/*
+		
 		descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[1].dstSet = descriptorSets[i];
-		descriptorWrites[1].dstBinding = 1;
-		descriptorWrites[1].dstArrayElement = 0;
-		descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		descriptorWrites[1].descriptorCount = 1;
-		descriptorWrites[1].pImageInfo = &imageInfo;
-		*/
-		descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[1].dstSet = descriptorSets[i];//对应SetLayout
-		descriptorWrites[1].dstBinding = 2;  //对应SetLayout当中的Bading数字
+		descriptorWrites[1].dstSet = uniformDescriptorSets[i];//对应SetLayout
+		descriptorWrites[1].dstBinding = 1;  //对应SetLayout当中的Bading数字
 		descriptorWrites[1].dstArrayElement = 0;
 		descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		descriptorWrites[1].descriptorCount = 1;
@@ -83,23 +107,61 @@ void VulkanRenderPass::createDescriptorSets(VulkanFramebuffer* vulkanFramebuffer
 
 		vkUpdateDescriptorSets(vkDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 	}
-
-
 }
 
-void VulkanRenderPass::createDescriptorPool() {
+void VulkanRenderPass::createTextureDescriptorSets(
+	VulkanFramebuffer* vulkanFramebuffer, 
+	VkSampler vkTextureSampler, 
+	VkImageView vkTextureImageView)
+{
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	size_t layoutsSize = vulkanFramebuffer->GetFrameBufferSize();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+
+	std::vector<VkDescriptorSetLayout> layouts(layoutsSize, textureDescriptorSetLayout);
+	VkDescriptorSetAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = textureDescriptorPool;
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(layoutsSize);
+	allocInfo.pSetLayouts = layouts.data();
+
+	textureDescriptorSets.resize(layoutsSize);
+	if (vkAllocateDescriptorSets(vkDevice, &allocInfo, textureDescriptorSets.data()) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate descriptor sets!");
+	}
+
+	for (size_t i = 0; i < layoutsSize; i++) {
+		VkDescriptorImageInfo imageInfo = {};
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = vkTextureImageView;
+		imageInfo.sampler = vkTextureSampler;
+		std::array<VkWriteDescriptorSet, 1> descriptorWrites = {};
+
+		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrites[0].dstSet = textureDescriptorSets[i];
+		descriptorWrites[0].dstBinding = 2;
+		descriptorWrites[0].dstArrayElement = 0;
+		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		descriptorWrites[0].descriptorCount = 1;
+		descriptorWrites[0].pImageInfo = &imageInfo;
+
+		vkUpdateDescriptorSets(vkDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+	}
+}
+
+void VulkanRenderPass::createUniformDescriptorPool() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
-	std::array<VkDescriptorPoolSize, 3> poolSizes = {};
+
+	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	poolSizes[0].descriptorCount = static_cast<uint32_t>(layoutsSize);
-	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	poolSizes[1].descriptorCount = static_cast<uint32_t>(layoutsSize);
-	poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[2].descriptorCount = static_cast<uint32_t>(layoutsSize);
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -107,12 +169,33 @@ void VulkanRenderPass::createDescriptorPool() {
 	poolInfo.pPoolSizes = poolSizes.data();
 	poolInfo.maxSets = static_cast<uint32_t>(layoutsSize);
 
-	if (vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+	if (vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &uniformDescriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }
 
-void VulkanRenderPass::createDescriptorSetLayout() {
+void VulkanRenderPass::createTextureDescriptorPool() {
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+	std::array<VkDescriptorPoolSize, 1> poolSizes = {};
+
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(layoutsSize);
+
+	VkDescriptorPoolCreateInfo poolInfo = {};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = static_cast<uint32_t>(layoutsSize);
+
+	if (vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &textureDescriptorPool) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor pool!");
+	}
+}
+
+void VulkanRenderPass::createUniformDescriptorSetLayout() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
@@ -125,31 +208,48 @@ void VulkanRenderPass::createDescriptorSetLayout() {
 	uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
 	VkDescriptorSetLayoutBinding uboPreEntityLayoutBinding = {};
-	uboPreEntityLayoutBinding.binding = 2;
+	uboPreEntityLayoutBinding.binding = 1;
 	uboPreEntityLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	uboPreEntityLayoutBinding.descriptorCount = 1;
 	uboPreEntityLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 	uboPreEntityLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
-	VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-	samplerLayoutBinding.binding = 1;
-	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	samplerLayoutBinding.descriptorCount = 1;
-	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	samplerLayoutBinding.pImmutableSamplers = nullptr;
 
-	std::array<VkDescriptorSetLayoutBinding, 3> bindings = { uboLayoutBinding, samplerLayoutBinding,uboPreEntityLayoutBinding };
+	std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding,uboPreEntityLayoutBinding };
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 	layoutInfo.pBindings = bindings.data();
 
-	if (vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+	if (vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &uniformDescriptorSetLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 }
 
+void VulkanRenderPass::createTextureDescriptorSetLayout() {
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+
+	VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+	samplerLayoutBinding.binding = 2;
+	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	samplerLayoutBinding.descriptorCount = 1;
+	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	samplerLayoutBinding.pImmutableSamplers = nullptr;
+
+	std::array<VkDescriptorSetLayoutBinding, 1> bindings = {  samplerLayoutBinding};
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+	layoutInfo.pBindings = bindings.data();
+
+	if (vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &textureDescriptorSetLayout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
+	}
+}
 
 
 void VulkanRenderPass::createRenderPass() {
@@ -266,10 +366,16 @@ void VulkanRenderPass::createGraphicPipelines()
 	vertShaderModule = RM->createShaderModule(vertShaderCode);
 	fragShaderModule = RM->createShaderModule(fragShaderCode);
 
+	VkDescriptorSetLayout layouts[] = { 
+		uniformDescriptorSetLayout 
+		,textureDescriptorSetLayout
+	};
+	int layoutCount = 2;
 	vulkanGraphicPipeline->createGraphicsPipeline(vertShaderModule,
 		fragShaderModule,
 		RM->GetExtent(),
-		&descriptorSetLayout,
+		layouts,
+		layoutCount,
 		renderPass);
 
 }

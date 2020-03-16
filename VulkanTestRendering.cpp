@@ -12,11 +12,17 @@ void VulkanTestRendering::Config(VulkanFrameRenderCommandBuffer* vulkanCommandBu
 	for (int i = 0; i < vulkanCommandBuffer->GetCommandBufferSize(); i++)
 	{
 		VkCommandBuffer commandBuffer = vulkanCommandBuffer->VulkanCommandBegin(i);
-		;
+		
+		VkDescriptorSet sets[] = {
+			vulkanRenderPass->GetUniformDescriptorSetByIndex(i) ,
+			vulkanRenderPass->GetTextureDescriptorSetByIndex(i)
+		};
+
 		Render(commandBuffer,
 			RM->GetFramebuffer()->GetFrameBufferByIndex(i),
 			RM->GetExtent(),
-			vulkanRenderPass->GetDescriptorSetByIndex(i));
+			sets,
+			2);
 
 		vulkanCommandBuffer->VulkanCommandEnd(i);
 	}
@@ -30,7 +36,8 @@ void VulkanTestRendering::SetSceneManager(VulkanSceneManager* vulkanSceneManager
 void VulkanTestRendering::Render(VkCommandBuffer commandBuffer,
 	VkFramebuffer frameBuffer,
 	VkExtent2D extend,
-	VkDescriptorSet descriptorSet
+	VkDescriptorSet *descriptorSet,
+	int descriptorSetNumber
 )
 {
 	// 这里才是真正的把renderPass和swapchaing中的Framebuffer联系起来
@@ -65,7 +72,7 @@ void VulkanTestRendering::Render(VkCommandBuffer commandBuffer,
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(commandBuffer, staticModel->GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetPipelineLayout(), 0, descriptorSetNumber, descriptorSet, 0, nullptr);
 		//vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 		vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(staticModel->GetIndexSize()), 1, 0, 0, 0);
 

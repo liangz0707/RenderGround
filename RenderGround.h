@@ -32,5 +32,7 @@ public:
 public:
 	VulkanFrameRenderCommandBuffer* vulkanCommandBuffer;
 	VulkanSync* vulkanSync;
+	VulkanPipelineResource* vulkanPipelineResource;
+	VulkanSceneManager* vulkanSceneManager;
 };
 

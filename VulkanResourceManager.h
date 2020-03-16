@@ -26,6 +26,8 @@ public:
 	}
 	VkFramebuffer createFramebuffer(VkFramebufferCreateInfo* framebufferInfo);
 
+	void createTextureSampler(VkSamplerCreateInfo* samplerInfo, VkSampler &sampler);
+
 	void SetFramebuffer(VulkanFramebuffer*);
 	void SetSwapChain(VulkanSwapChain*);
 	VulkanFramebuffer* GetFramebuffer();
@@ -44,7 +46,7 @@ public:
 		VkImage& image, 
 		VkDeviceMemory& imageMemory);
 
-	void createSampler(VkSamplerCreateInfo* samplerInfo, VkSampler* sampler);
+	void createSampler(VkSamplerCreateInfo* samplerInfo, VkSampler& sampler);
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 	void destroyImage(VkImage);
 	void allocCommandBuffer(VkCommandBufferAllocateInfo* allocInfo, VkCommandBuffer* commandBuffer);
