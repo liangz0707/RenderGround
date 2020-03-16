@@ -32,16 +32,17 @@ public:
 		int texWidth,
 		int texHeight,
 		int texChannel,
-		VkImage textureImage,
-		VkDeviceMemory textureImageMemory);
+		VkImage &textureImage,
+		VkDeviceMemory &textureImageMemory);
 
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 	
 	void createUniformBuffers(VkDeviceSize bufferSize);
 	void createPreUniformBuffers(VkDeviceSize bufferSize);
-	void updateUniformBuffer();
-	VkDeviceMemory GetUboMemory();
-	VkDeviceMemory GetPreUboMemory();
+	void updateUniformBuffer(int swapChainImageIndex);
+	void updateTexture(int swapChainImageIndex);
+	VkDeviceMemory GetUboMemoryByIndex(int swapChainImageIndex);
+	VkDeviceMemory GetPreUboMemoryByIndex(int swapChainImageIndex);
 
 	std::vector<VkBuffer> GetUniformBuffers()
 	{
@@ -59,13 +60,13 @@ public:
 	}
 
 private:
-	VulkanSceneManager* vulkanSceneManager;
-	int imageIndex;
 	VkSampler textureSampler;
 	std::vector<VkBuffer> uniformBuffers;
 	std::vector<VkDeviceMemory> uniformBuffersMemory;
 	std::vector<VkBuffer> preEntityUniformBuffers;
 	std::vector<VkDeviceMemory> preEntityUniformBuffersMemory;
+
+
 	std::vector<VkCommandBuffer> commandBuffers;
 };
 

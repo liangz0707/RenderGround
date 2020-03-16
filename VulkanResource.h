@@ -1,15 +1,13 @@
 #pragma once
 #include "Common.h"
+#include "VulkanTexture.h"
 class VulkanResource
 {
 public:
-	VulkanResource(VkDeviceSize vkDeviceSize, void* data);
-	~VulkanResource();
-	void createBuffer();
+	VulkanResource();
+
 
 private:
-	VkDeviceMemory vkDeviceMemory;
-	VkBuffer vkBuffer;
-	void* data;
+	std::vector<VulkanTexture> textures;
 };
 

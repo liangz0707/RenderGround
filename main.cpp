@@ -518,15 +518,15 @@ private:
 
 		for (const auto& availableFormat : availableFormats) {
 			// 如果有HDR优先支持
-			if (availableFormat.format == VK_FORMAT_R16G16B16A16_SFLOAT && availableFormat.colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT) {
+	/*		if (availableFormat.format == VK_FORMAT_R16G16B16A16_SFLOAT && availableFormat.colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT) {
 				std::cout << "\t" << "HDR Enable" << std::endl;
 				return availableFormat;
-			}
+			}*/
 
-			//if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-			//	std::cout << "\t" << "LDR Enable" << std::endl;
-			//	return availableFormat;
-			//}
+			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+				std::cout << "\t" << "LDR Enable" << std::endl;
+				return availableFormat;
+			}
 		}
 		return availableFormats[0];
 	}

@@ -40,8 +40,7 @@ void VulkanPipelineResource::createPreUniformBuffers(VkDeviceSize bufferSize)
 }
 
 
-void VulkanPipelineResource::updateUniformBuffer() {
-
+void VulkanPipelineResource::updateUniformBuffer(int swapChainImageIndex) {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	static auto startTime = std::chrono::high_resolution_clock::now();
@@ -61,28 +60,33 @@ void VulkanPipelineResource::updateUniformBuffer() {
 	ubo.proj[1][1] *= -1;
 
 	void* data;
-	RM->mapMemory(uniformBuffersMemory[imageIndex], sizeof(ubo), &data);
+	RM->mapMemory(uniformBuffersMemory[swapChainImageIndex], sizeof(ubo), &data);
 	memcpy(data, &ubo, sizeof(ubo));
-	RM->unMapMemory(uniformBuffersMemory[imageIndex]);
+	RM->unMapMemory(uniformBuffersMemory[swapChainImageIndex]);
 
 
 	PreEntityUniformBufferObject eubo = {};
 
 	eubo.CameraInfo = glm::vec4(1.0f);
 	eubo.ScreenInfo = glm::vec4(0.5f);
-	RM->mapMemory(preEntityUniformBuffersMemory[imageIndex], sizeof(eubo), &data);
+	RM->mapMemory(preEntityUniformBuffersMemory[swapChainImageIndex], sizeof(eubo), &data);
 	memcpy(data, &eubo, sizeof(eubo));
-	RM->unMapMemory(preEntityUniformBuffersMemory[imageIndex]);
+	RM->unMapMemory(preEntityUniformBuffersMemory[swapChainImageIndex]);
 }
 
-VkDeviceMemory VulkanPipelineResource::GetUboMemory()
+void VulkanPipelineResource::updateTexture(int swapChainImageIndex)
 {
-	return uniformBuffersMemory[imageIndex];
+
 }
 
-VkDeviceMemory VulkanPipelineResource::GetPreUboMemory()
+VkDeviceMemory VulkanPipelineResource::GetUboMemoryByIndex(int swapChainImageIndex)
 {
-	return preEntityUniformBuffersMemory[imageIndex];
+	return uniformBuffersMemory[swapChainImageIndex];
+}
+
+VkDeviceMemory VulkanPipelineResource::GetPreUboMemoryByIndex(int swapChainImageIndex)
+{
+	return preEntityUniformBuffersMemory[swapChainImageIndex];
 }
 
 void VulkanPipelineResource::createVertexBuffer(VkDeviceSize bufferSize,
@@ -154,7 +158,7 @@ void VulkanPipelineResource::createIndexBuffer(VkDeviceSize bufferSize,
 	// 现在申请的Vertexbuffer是DeviceLocal，所以无法用Map进行映射。
 	// 需要从stagingBuffer到vertexBuffer
 	RM->createBuffer(bufferSize,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		vertexBuffer,
 		vertexBufferMemory);
@@ -197,7 +201,7 @@ void VulkanPipelineResource::createTextureSampler() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
-	RM->createSampler(&samplerInfo, &textureSampler);
+	RM->createSampler(&samplerInfo, textureSampler);
 }
 
 
@@ -255,8 +259,8 @@ void VulkanPipelineResource::createTextureImage(unsigned char* pixels,
 	int texWidth,
 	int texHeight,
 	int texChannel,
-	VkImage textureImage,
-	VkDeviceMemory textureImageMemory
+	VkImage &textureImage,
+	VkDeviceMemory &textureImageMemory
 )
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();

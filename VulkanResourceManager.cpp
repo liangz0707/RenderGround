@@ -249,9 +249,11 @@ void VulkanResourceManager::freeMemory(VkDeviceMemory memory)
 	vkFreeMemory(vulkanDevice->GetInstance(), memory, nullptr);
 }
 
-void VulkanResourceManager::createSampler(VkSamplerCreateInfo* samplerInfo, VkSampler* sampler)
+void VulkanResourceManager::createSampler(
+	VkSamplerCreateInfo* samplerInfo, 
+	VkSampler& sampler)
 {
-	if (vkCreateSampler(vulkanDevice->GetInstance(), samplerInfo, nullptr, sampler) != VK_SUCCESS) {
+	if (vkCreateSampler(vulkanDevice->GetInstance(), samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler!");
 	}
 }
@@ -288,6 +290,11 @@ VkImageView VulkanResourceManager::createImageView(VkImage image,
 	createInfo.image = image;
 	createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	createInfo.format = format;
+	createInfo.subresourceRange.aspectMask = flags;
+	createInfo.subresourceRange.baseMipLevel = 0;
+	createInfo.subresourceRange.levelCount = 1;
+	createInfo.subresourceRange.baseArrayLayer = 0;
+	createInfo.subresourceRange.layerCount = 1;
 
 	VkImageView imageView;
 	if (vkCreateImageView(vulkanDevice->GetInstance(), &createInfo, nullptr, &imageView) != VK_SUCCESS)
@@ -432,6 +439,15 @@ void VulkanResourceManager::PresentQueueSubmit(uint32_t imageIndex)
 	}
 	else if (result != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swap chain image!");
+	}
+}
+
+void VulkanResourceManager::createTextureSampler(VkSamplerCreateInfo *samplerInfo,VkSampler& sampler)
+{
+	if (vkCreateSampler(vulkanDevice->GetInstance()
+		, samplerInfo,
+		nullptr, &sampler) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create texture sampler!");
 	}
 }
 
