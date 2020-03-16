@@ -35,9 +35,15 @@ public:
 		return indexSize;
 	}
 
+
+	void SetDescriptorSet(VkDescriptorSet vkDescriptorSet)
+	{
+		this->vkDescriptorSet = vkDescriptorSet;
+	}
+
 	VkDescriptorSet GetDescriptorSet()
 	{
-		return descriptorSet;
+		return vkDescriptorSet;
 	}
 
 private:
@@ -45,7 +51,7 @@ private:
 	VkImageView textureImageView;
 	VkDeviceMemory textureImageMemory;
 
-	VkDescriptorSet descriptorSet;
+	VkDescriptorSet vkDescriptorSet;
 
 	size_t indexSize;
 	VkBuffer vertexBuffer;

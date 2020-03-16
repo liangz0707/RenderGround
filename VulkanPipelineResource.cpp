@@ -22,21 +22,17 @@ void VulkanPipelineResource::createUniformBuffers(VkDeviceSize bufferSize)
 	}
 }
 
-void VulkanPipelineResource::createPreUniformBuffers(VkDeviceSize bufferSize)
+void VulkanPipelineResource::createPreUniformBuffer(
+	VkDeviceSize bufferSize, 
+	VkBuffer& preObjectBuffer,
+	VkDeviceMemory& vertexBufferMemory)
 {
-
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	preEntityUniformBuffers.resize(RM->GetFramebuffer()->GetFrameBufferSize());
-	preEntityUniformBuffersMemory.resize(RM->GetFramebuffer()->GetFrameBufferSize());
-
-	for (size_t i = 0; i < RM->GetFramebuffer()->GetFrameBufferSize(); i++)
-	{
-		RM->createBuffer(bufferSize,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			preEntityUniformBuffers[i],
-			preEntityUniformBuffersMemory[i]);
-	}
+	RM->createBuffer(bufferSize,
+		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		preObjectBuffer,
+		vertexBufferMemory);
 }
 
 
@@ -65,13 +61,7 @@ void VulkanPipelineResource::updateUniformBuffer(int swapChainImageIndex) {
 	RM->unMapMemory(uniformBuffersMemory[swapChainImageIndex]);
 
 
-	PreEntityUniformBufferObject eubo = {};
 
-	eubo.CameraInfo = glm::vec4(1.0f);
-	eubo.ScreenInfo = glm::vec4(0.5f);
-	RM->mapMemory(preEntityUniformBuffersMemory[swapChainImageIndex], sizeof(eubo), &data);
-	memcpy(data, &eubo, sizeof(eubo));
-	RM->unMapMemory(preEntityUniformBuffersMemory[swapChainImageIndex]);
 }
 
 void VulkanPipelineResource::updateTexture(int swapChainImageIndex)
@@ -84,10 +74,120 @@ VkDeviceMemory VulkanPipelineResource::GetUboMemoryByIndex(int swapChainImageInd
 	return uniformBuffersMemory[swapChainImageIndex];
 }
 
-VkDeviceMemory VulkanPipelineResource::GetPreUboMemoryByIndex(int swapChainImageIndex)
-{
-	return preEntityUniformBuffersMemory[swapChainImageIndex];
+
+void VulkanPipelineResource::createObjectDescriptorPool() {
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+
+	// Model Number
+	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
+
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(layoutsSize);
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(layoutsSize);
+
+	VkDescriptorPoolCreateInfo poolInfo = {};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = static_cast<uint32_t>(layoutsSize);
+
+	if (vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &objectDescriptorPool) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor pool!");
+	}
 }
+
+
+void VulkanPipelineResource::createObjectDescriptorSetLayout() {
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+
+	VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+	samplerLayoutBinding.binding = 0;
+	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	samplerLayoutBinding.descriptorCount = 1;
+	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	samplerLayoutBinding.pImmutableSamplers = nullptr;
+
+	VkDescriptorSetLayoutBinding uboPreEntityLayoutBinding = {};
+	uboPreEntityLayoutBinding.binding = 1;
+	uboPreEntityLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboPreEntityLayoutBinding.descriptorCount = 1;
+	uboPreEntityLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+	uboPreEntityLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+	std::array<VkDescriptorSetLayoutBinding, 2> bindings = { samplerLayoutBinding,uboPreEntityLayoutBinding };
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+	layoutInfo.pBindings = bindings.data();
+
+	if (vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &objectDescriptorSetLayout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
+	}
+}
+
+
+VkDescriptorSet VulkanPipelineResource::createObjectDescriptorSet(
+	VkBuffer preEntityUniformBuffer,
+	VkSampler vkTextureSampler,
+	VkImageView vkTextureImageView)
+{
+	VkDescriptorSet vkDescriptorSet;
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+
+	VkDescriptorSetLayout layouts = objectDescriptorSetLayout;
+	VkDescriptorSetAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = objectDescriptorPool;
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(1);
+	allocInfo.pSetLayouts = &layouts;
+
+	if (vkAllocateDescriptorSets(vkDevice, &allocInfo, &vkDescriptorSet) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate descriptor sets!");
+	}
+
+	VkDescriptorImageInfo imageInfo = {};
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfo.imageView = vkTextureImageView;
+	imageInfo.sampler = vkTextureSampler;
+
+	VkDescriptorBufferInfo preBufferInfo = {};
+	preBufferInfo.buffer = preEntityUniformBuffer;
+	preBufferInfo.offset = 0;
+	preBufferInfo.range = VK_WHOLE_SIZE;// sizeof(UniformBufferObject);
+
+	std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
+
+	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrites[0].dstSet = vkDescriptorSet;
+	descriptorWrites[0].dstBinding = 0;
+	descriptorWrites[0].dstArrayElement = 0;
+	descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	descriptorWrites[0].descriptorCount = 1;
+	descriptorWrites[0].pImageInfo = &imageInfo;
+
+	descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrites[1].dstSet = vkDescriptorSet;//对应SetLayout
+	descriptorWrites[1].dstBinding = 1;  //对应SetLayout当中的Bading数字
+	descriptorWrites[1].dstArrayElement = 0;
+	descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	descriptorWrites[1].descriptorCount = 1;
+	descriptorWrites[1].pBufferInfo = &preBufferInfo;
+
+	vkUpdateDescriptorSets(vkDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+
+	return vkDescriptorSet;
+}
+
+
+
 
 void VulkanPipelineResource::createVertexBuffer(VkDeviceSize bufferSize,
 										void * srcData,

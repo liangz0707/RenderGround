@@ -11,6 +11,12 @@ class VulkanPipelineResource
 public:
 	VulkanPipelineResource();
 
+	void createObjectDescriptorPool();
+	void createObjectDescriptorSetLayout();
+	VkDescriptorSet createObjectDescriptorSet(
+		VkBuffer preEntityUniformBuffer,
+		VkSampler vkTextureSampler,
+		VkImageView vkTextureImageView);
 
 	void createTextureSampler();
 	void createCommandBuffers();
@@ -38,21 +44,19 @@ public:
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 	
 	void createUniformBuffers(VkDeviceSize bufferSize);
-	void createPreUniformBuffers(VkDeviceSize bufferSize);
+	void createPreUniformBuffer(
+		VkDeviceSize bufferSize,
+		VkBuffer& preObjectBuffer,
+		VkDeviceMemory& vertexBufferMemory);
 	void updateUniformBuffer(int swapChainImageIndex);
 	void updateTexture(int swapChainImageIndex);
 	VkDeviceMemory GetUboMemoryByIndex(int swapChainImageIndex);
-	VkDeviceMemory GetPreUboMemoryByIndex(int swapChainImageIndex);
 
 	std::vector<VkBuffer> GetUniformBuffers()
 	{
 		return uniformBuffers;
 	}
 
-	std::vector<VkBuffer> GetPreEntityUniformBuffers()
-	{
-		return preEntityUniformBuffers;
-	}
 
 	VkSampler GetTextureSampler()
 	{
@@ -63,10 +67,10 @@ private:
 	VkSampler textureSampler;
 	std::vector<VkBuffer> uniformBuffers;
 	std::vector<VkDeviceMemory> uniformBuffersMemory;
-	std::vector<VkBuffer> preEntityUniformBuffers;
-	std::vector<VkDeviceMemory> preEntityUniformBuffersMemory;
-
 
 	std::vector<VkCommandBuffer> commandBuffers;
+
+	VkDescriptorPool objectDescriptorPool;
+	VkDescriptorSetLayout objectDescriptorSetLayout;
 };
 

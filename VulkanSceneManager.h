@@ -18,6 +18,8 @@ class VulkanSceneManager
 
 public:
 	VulkanSceneManager();
+	void UpdateModel();
+
 
 	void loadRenderModel(VulkanModel* vulkanModel);
 	void unloadRenderModel(VulkanModel* vulkanModel);
@@ -48,5 +50,6 @@ private:
 	std::vector<VulkanRModel*> vulkanModels;
 	std::vector<VulkanRTexture*> vulkanTextures;
 	VulkanPipelineResource* vulkanPipelineResource;
+
 };
 

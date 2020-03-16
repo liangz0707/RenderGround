@@ -32,7 +32,7 @@ void RenderGround::run()
 
 	vulkanPipelineResource = new VulkanPipelineResource();
 
-	VulkanRenderPass* vulkanRenderPass = new VulkanRenderPass(vulkanPipelineResource);
+	VulkanRenderPass* vulkanRenderPass = new VulkanRenderPass();
 
 	vulkanRenderPass->createRenderPass();
 
@@ -50,20 +50,19 @@ void RenderGround::run()
 
 	vulkanPipelineResource->createTextureSampler();
 	vulkanPipelineResource->createUniformBuffers(sizeof(UniformBufferObject));
-	vulkanPipelineResource->createPreUniformBuffers(sizeof(UniformBufferObject));
-
 
 	RM->createCommandPool();
 	RM->CreateRenderState();
+
+	vulkanPipelineResource->createObjectDescriptorSetLayout();
+	vulkanPipelineResource->createObjectDescriptorPool();
 
 	vulkanSceneManager->loadRenderModel(vulkanModel);
 	vulkanSceneManager->loadTexture(vulkanTexture);
 	vulkanSceneManager->SetPipelineResource(vulkanPipelineResource);
 
 	vulkanRenderPass->createUniformDescriptorSetLayout();
-	vulkanRenderPass->createObjectDescriptorSetLayout();
 	vulkanRenderPass->createUniformDescriptorPool();
-	vulkanRenderPass->createObjectDescriptorPool();
 	vulkanRenderPass->createUniformDescriptorSets(
 		vulkanFrameBuffer,
 		vulkanPipelineResource->GetUniformBuffers());

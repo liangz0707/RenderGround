@@ -4,6 +4,7 @@ VulkanSceneManager::VulkanSceneManager()
 {
 
 }
+
 void VulkanSceneManager::loadRenderModel(VulkanModel* vulkanModel)
 {
 	VulkanRModel* vulkanRModel = new VulkanRModel();
@@ -11,6 +12,22 @@ void VulkanSceneManager::loadRenderModel(VulkanModel* vulkanModel)
 	VkDeviceMemory vkIndexDeviceMemory;
 	VkBuffer vkVertexBuffer;
 	VkDeviceMemory vkVertexDeviceMemory;
+
+	VkBuffer preEntityUniformBuffer;
+	VkDeviceMemory preEntityUniformBufferMemory;
+
+	vulkanPipelineResource->createPreUniformBuffer(
+		sizeof(PreEntityUniformBufferObject),
+		preEntityUniformBuffer,
+		preEntityUniformBufferMemory
+	);
+
+	VkDescriptorSet vkDescriptorSet = 
+		vulkanPipelineResource->createObjectDescriptorSet(
+				preEntityUniformBuffer,
+				vulkanPipelineResource->GetTextureSampler(),
+				GetTextureByIndex(0)->GetImageView()
+			);
 
 	vulkanPipelineResource->createIndexBuffer(
 		sizeof(vulkanModel->GetIndex()[0])* vulkanModel->GetIndex().size(),
@@ -22,7 +39,7 @@ void VulkanSceneManager::loadRenderModel(VulkanModel* vulkanModel)
 		vulkanModel->GetVertex().data(),
 		vkVertexBuffer, vkVertexDeviceMemory);
 
-
+	vulkanRModel->SetDescriptorSet(vkDescriptorSet);
 	vulkanRModel->SetVertexBuffer(vkVertexBuffer);
 	vulkanRModel->SetIndexBuffer(vkIndexBuffer);
 	vulkanRModel->SetIndexSize(vulkanModel->GetIndex().size());
@@ -62,4 +79,18 @@ void VulkanSceneManager::loadTexture(VulkanTexture* vulkanTexture)
 
 void VulkanSceneManager::unloadTexture(VulkanTexture* vulkanTexture)
 {
+}
+
+
+void VulkanSceneManager::UpdateModel()
+{
+	/*
+		PreEntityUniformBufferObject eubo = {};
+
+	eubo.CameraInfo = glm::vec4(1.0f);
+	eubo.ScreenInfo = glm::vec4(0.5f);
+	RM->mapMemory(preEntityUniformBuffersMemory[swapChainImageIndex], sizeof(eubo), &data);
+	memcpy(data, &eubo, sizeof(eubo));
+	RM->unMapMemory(preEntityUniformBuffersMemory[swapChainImageIndex]);
+	*/
 }
