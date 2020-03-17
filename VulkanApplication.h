@@ -36,11 +36,14 @@ public:
 
 	bool framebufferResized = false;
 	VulkanApplication();
-	void initWindow();
+	void createWindow();
+	void destroyWindow();
 	void checkExtension();
 	void createInstance();
+	void destroyInstance();
 	bool checkValidationLayerSupport();
 	void createSurface();
+	void destroySurface();
 	void pickPhysicalDevice();
 	bool isDeviceSuitable(VkPhysicalDevice device);
 	int rateDeviceSuitability(VkPhysicalDevice device);

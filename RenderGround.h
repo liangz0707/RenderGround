@@ -30,7 +30,9 @@ public:
 	void mainLoop();
 	void recreateSwapChain();
 	void cleanupSwapChain();
+	void cleanup();
 public:
+	VulkanApplication* vulkanApplication;
 	VulkanRenderPass* vulkanRenderPass;
 	VulkanFrameRenderCommandBuffer* vulkanCommandBuffer;
 	VulkanSync* vulkanSync;

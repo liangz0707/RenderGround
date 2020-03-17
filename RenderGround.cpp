@@ -7,8 +7,8 @@ RenderGround::RenderGround()
 
 void RenderGround::run()
 {
-	VulkanApplication* vulkanApplication = new VulkanApplication();
-	vulkanApplication->initWindow();
+	vulkanApplication = new VulkanApplication();
+	vulkanApplication->createWindow();
 	vulkanApplication->createInstance();
 	vulkanApplication->createSurface();
 	vulkanApplication->pickPhysicalDevice();
@@ -180,6 +180,16 @@ void RenderGround::cleanupSwapChain() {
 
 	//vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 	vulkanRenderPass->createUniformDescriptorPool();
+}
+
+void RenderGround::cleanup()
+{
+	cleanupSwapChain();
+
+
+	vulkanApplication->destroySurface();
+	vulkanApplication->destroyInstance();
+	vulkanApplication->destroyWindow();
 }
 
 void RenderGround::recreateSwapChain()

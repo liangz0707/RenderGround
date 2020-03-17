@@ -56,6 +56,11 @@ void VulkanApplication::createInstance()
 	}
 }
 
+void VulkanApplication::destroyInstance()
+{
+	vkDestroyInstance(instance, nullptr);
+}
+
 bool VulkanApplication::checkValidationLayerSupport()
 {
 	uint32_t layerCount;
@@ -107,7 +112,7 @@ static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 	app->framebufferResized = true;
 }
 
-void VulkanApplication::initWindow() {
+void VulkanApplication::createWindow() {
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -116,6 +121,11 @@ void VulkanApplication::initWindow() {
 	window = glfwCreateWindow(WIDTH, HEIGHT, "RenderGround", nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+}
+void VulkanApplication::destroyWindow()
+{
+	glfwDestroyWindow(window);
+	glfwTerminate();
 }
 
 QueueFamilyIndices VulkanApplication::findQueueFamilies(VkPhysicalDevice device) {
@@ -233,4 +243,8 @@ void VulkanApplication::createSurface() {
 	if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create window surface!");
 	}
+}
+
+void VulkanApplication::destroySurface() {
+	vkDestroySurfaceKHR(instance, surface, nullptr);
 }
