@@ -50,6 +50,23 @@ void VulkanSceneManager::loadRenderModel(VulkanModel* vulkanModel)
 	vulkanRModel->SetIndexBufferMemory(vkIndexDeviceMemory);
 	vulkanRModel->SetIndexSize(vulkanModel->GetIndex().size());
 
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+
+	void* data;
+	RM->mapMemory(
+		vulkanRModel->GetDescriptorSetBufferMemory(),
+		sizeof(PreEntityUniformBufferObject),
+		&data);
+
+	memcpy(
+		data,
+		&(vulkanRModel->GetUniformBuffer()),
+		sizeof(PreEntityUniformBufferObject));
+
+	RM->unMapMemory(
+		vulkanRModel->GetDescriptorSetBufferMemory());
+
 	vulkanModels.push_back(vulkanRModel);
 
 }
@@ -127,7 +144,12 @@ void VulkanSceneManager::unloadTextures()
 }
 
 
-void VulkanSceneManager::UpdateModel()
+void VulkanSceneManager::updateModel()
 {
+	for (auto model : vulkanModels)
+	{
+		model->Update();
+	}
 
+	
 }

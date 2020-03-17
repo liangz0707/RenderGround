@@ -12,6 +12,7 @@ layout(set = 0,binding = 0) uniform UniformBufferObject {
 } ubo;
 
 layout(set = 1,binding = 1) uniform PUniformBufferObject {
+    mat4 model;
     vec4 CameraInfo;
     vec4 ScreenInfo;
 } pubo;
@@ -21,7 +22,7 @@ layout(location = 1) out vec2 fragTexCoord;
 
 
 void main() {
-    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+    gl_Position = ubo.proj * ubo.view * pubo.model * vec4(inPosition, 1.0);
     //gl_Position = vec4(inPosition, 1.0);
     fragColor = inColor;
     fragTexCoord = inTexCoord;

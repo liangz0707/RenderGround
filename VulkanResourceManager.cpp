@@ -30,7 +30,6 @@ void VulkanResourceManager::SetFramebuffer(VulkanFramebuffer* vulkanFramebuffer)
 void VulkanResourceManager::SetSwapChain(VulkanSwapChain* vulkanSwapChain)
 {
 	this->vulkanSwapChain = vulkanSwapChain;
-
 }
 
 VulkanFramebuffer* VulkanResourceManager::GetFramebuffer()
@@ -94,7 +93,6 @@ VkSemaphore VulkanResourceManager::CreateSemaphore(VkSemaphoreCreateInfo* vkSema
 	}
 	return vkSemaphore;
 }
-
 
 VkShaderModule VulkanResourceManager::createShaderModule(const std::vector<char>& code) {
 	VkShaderModuleCreateInfo createInfo = {};

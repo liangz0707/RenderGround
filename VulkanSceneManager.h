@@ -18,8 +18,7 @@ class VulkanSceneManager
 
 public:
 	VulkanSceneManager();
-	void UpdateModel();
-
+	void updateModel();
 
 	void loadRenderModel(VulkanModel* vulkanModel);
 	void unloadRenderModel(VulkanModel* vulkanModel);

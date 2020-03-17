@@ -83,6 +83,7 @@ struct UniformBufferObject {
 
 
 struct PreEntityUniformBufferObject {
+	glm::mat4 model;
 	glm::vec4 ScreenInfo;
 	glm::vec4 CameraInfo;
 };

@@ -23,7 +23,6 @@ public :
 	void createSwapChain();
 	void destroySwapChain();
 
-
 	void createSwapChainImageViews();
 	void destroySwapChainImageViews();
 

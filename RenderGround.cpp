@@ -70,7 +70,6 @@ void RenderGround::run()
 
 	vkDeviceWaitIdle(vulkanDevice->GetInstance());
 
-
 	cleanup();
 }
 
@@ -81,7 +80,7 @@ void RenderGround::drawFrame()
 	RM->WaitForFences();
 
 	uint32_t imageIndex;
-	//VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
 	VkResult vkResult = RM->AcquireNextImageKHR(imageIndex);
 	if (vkResult == VK_ERROR_OUT_OF_DATE_KHR) {
 		recreateSwapChain();
@@ -91,21 +90,13 @@ void RenderGround::drawFrame()
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	/*createGraphicsPipeline
-	// Check if a previous frame is using this image (i.e. there is its fence to wait on)
-	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-		vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
-	}
-	// Mark the image as now being in use by this frame
-	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
-	*/
 	RM->CheckPrivousFrameFinishend(imageIndex);
 
 	vulkanPipelineResource->updateUniformBuffer(imageIndex);
 	vulkanPipelineResource->updateTexture(imageIndex);
+	vulkanSceneManager->updateModel();
 
-	//manually need to restore the fence to the unsignaled state by resetting it with the vkResetFences call.
-	//vkResetFences(device, 1, &inFlightFences[currentFrame]);
+
 	RM->ResetFence();
 
 	RM->GraphicQueueSubmit(vulkanCommandBuffer->GetCommandBufferByIndex(imageIndex));
@@ -132,41 +123,17 @@ void RenderGround::cleanupSwapChain() {
 
 	RM->GetFramebuffer()->destroyDepthResource();
 	RM->GetFramebuffer()->destroySwapChainFrameBuffers();
-	/*
-	vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
-	*/
+
 	vulkanCommandBuffer->destroyCommandBuffer();
 
-	/*
-	vkDestroyPipeline(device, graphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-	*/
 	vulkanRenderPass->destroyGraphicPipelines();
-
-	//vkDestroyRenderPass(device, renderPass, nullptr);
 	vulkanRenderPass->destroyRenderPass();
 
-	/*
-	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-		vkDestroyImageView(device, swapChainImageViews[i], nullptr);
-	}
-
-	vkDestroySwapchainKHR(device, swapChain, nullptr);
-	*/
 	RM->GetSwapChain()->destroySwapChainImageViews();
 	RM->GetSwapChain()->destroySwapChain();
 
-	/*
-	for (size_t i = 0; i < swapChainImages.size(); i++) {
-		vkDestroyBuffer(device, uniformBuffers[i], nullptr);
-		vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
-		vkDestroyBuffer(device, preEntityUniformBuffers[i], nullptr);
-		vkFreeMemory(device, preEntityUniformBuffersMemory[i], nullptr);
-	}
-	*/
 	vulkanPipelineResource->destroyUniformBuffers();
 
-	//vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 	vulkanRenderPass->destroyUniformDescriptorPool();
 }
 

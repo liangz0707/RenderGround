@@ -57,8 +57,10 @@ void VulkanPipelineResource::updateUniformBuffer(int swapChainImageIndex) {
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 	UniformBufferObject ubo = {};
+	// 模型数据抽取到模型当中
 	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
+	// 摄像机数据
 	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	ubo.proj = glm::perspective(glm::radians(45.0f), RM->GetExtent().width / (float)RM->GetExtent().height, 0.1f, 10.0f);
@@ -71,9 +73,6 @@ void VulkanPipelineResource::updateUniformBuffer(int swapChainImageIndex) {
 	RM->mapMemory(uniformBuffersMemory[swapChainImageIndex], sizeof(ubo), &data);
 	memcpy(data, &ubo, sizeof(ubo));
 	RM->unMapMemory(uniformBuffersMemory[swapChainImageIndex]);
-
-
-
 }
 
 void VulkanPipelineResource::updateTexture(int swapChainImageIndex)
@@ -85,7 +84,6 @@ VkDeviceMemory VulkanPipelineResource::GetUboMemoryByIndex(int swapChainImageInd
 {
 	return uniformBuffersMemory[swapChainImageIndex];
 }
-
 
 void VulkanPipelineResource::createObjectDescriptorPool() {
 
@@ -118,7 +116,6 @@ void VulkanPipelineResource::destroyObjectDescriptorPool()
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 	vkDestroyDescriptorPool(vkDevice, objectDescriptorPool, nullptr);
 }
-
 
 void VulkanPipelineResource::createObjectDescriptorSetLayout() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
@@ -157,7 +154,6 @@ void VulkanPipelineResource::destroyObjectDescriptorSetLayout()
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 	vkDestroyDescriptorSetLayout(vkDevice, objectDescriptorSetLayout, nullptr);
 }
-
 
 VkDescriptorSet VulkanPipelineResource::createObjectDescriptorSet(
 	VkBuffer preEntityUniformBuffer,
@@ -219,7 +215,6 @@ void VulkanPipelineResource::createVertexBuffer(VkDeviceSize bufferSize,
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
-
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
 
@@ -259,7 +254,6 @@ void VulkanPipelineResource::createIndexBuffer(VkDeviceSize bufferSize,
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
-
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
 
@@ -292,11 +286,9 @@ void VulkanPipelineResource::createIndexBuffer(VkDeviceSize bufferSize,
 	RM->freeMemory(stagingBufferMemory);
 }
 
-
 void VulkanPipelineResource::createCommandBuffers()
 {
 }
-
 
 void VulkanPipelineResource::createTextureSampler() {
 	VkSamplerCreateInfo samplerInfo = {};
@@ -333,7 +325,6 @@ void VulkanPipelineResource::destroyTextureSampler()
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 	vkDestroySampler(vkDevice, textureSampler, nullptr);
 }
-
 
 bool VulkanPipelineResource::hasStencilComponent(VkFormat format) {
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
@@ -487,7 +478,6 @@ void VulkanPipelineResource::transitionImageLayout(VkImage image, VkFormat forma
 	else {
 		throw std::invalid_argument("unsupported layout transition!");
 	}
-
 
 	vkCmdPipelineBarrier(
 		commandBuffer->GetInstance(),
