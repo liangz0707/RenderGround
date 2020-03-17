@@ -12,7 +12,8 @@ private :
 	QueueFamilyIndices indices;
 	VkPhysicalDevice physicalDevice;
 	VkSurfaceKHR surface;
-
+	int windowWidth;
+	int windowHeight;
 
 	const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation",
@@ -20,6 +21,7 @@ private :
 	};
 
 public:	
+
 
 	VkPhysicalDevice GetVkPhysicalDevice() {
 		return physicalDevice;
@@ -34,9 +36,28 @@ public:
 		return window;
 	}
 
+	int GetWindowHeight()
+	{
+		return windowHeight;
+	}
+	int GetWindowWidth()
+	{
+		return windowWidth;
+	}
+	bool IsResized()
+	{
+		return framebufferResized;
+	}
+
+	void ResetResizedFlag()
+	{
+		framebufferResized = false;
+	}
+
 	bool framebufferResized = false;
-	VulkanApplication();
+	VulkanApplication(int,int);
 	void createWindow();
+	void updateWindowSize();
 	void destroyWindow();
 	void checkExtension();
 	void createInstance();

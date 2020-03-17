@@ -40,5 +40,4 @@ public:
 	}
 private:
 	std::vector<VkCommandBuffer> commandBuffers;
-	VkCommandPool commandPool;
 };

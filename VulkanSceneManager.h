@@ -25,6 +25,8 @@ public:
 	void unloadRenderModel(VulkanModel* vulkanModel);
 	void loadTexture(VulkanTexture* vulkanTexture);
 	void unloadTexture(VulkanTexture* vulkanTexture);
+	void unloadModels();
+	void unloadTextures();
 
 	void SetPipelineResource(VulkanPipelineResource* vulkanPipelineResource)
 	{

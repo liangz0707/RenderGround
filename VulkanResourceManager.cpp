@@ -2,8 +2,6 @@
 
 VulkanResourceManager* VulkanResourceManager::vulkanResourceManager = NULL;
 
-
-
 VulkanResourceManager::VulkanResourceManager(VulkanDevice* vulkanDevice,
 	VulkanApplication* vulkanInstance)
 {
@@ -34,17 +32,16 @@ void VulkanResourceManager::SetSwapChain(VulkanSwapChain* vulkanSwapChain)
 	this->vulkanSwapChain = vulkanSwapChain;
 
 }
+
 VulkanFramebuffer* VulkanResourceManager::GetFramebuffer()
 {
 	return vulkanFramebuffer;
 }
 
-
 VulkanSwapChain* VulkanResourceManager::GetSwapChain()
 {
 	return vulkanSwapChain;
 }
-
 
 QueueFamilyIndices VulkanResourceManager::findQueueFamilies() {
 	QueueFamilyIndices indices;
@@ -135,6 +132,11 @@ void VulkanResourceManager::createCommandPool()
 	if (vkCreateCommandPool(vulkanDevice->GetInstance(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create command pool!");
 	}
+}
+
+void VulkanResourceManager::DestroyCommandPool()
+{
+	vkDestroyCommandPool(vulkanDevice->GetInstance(), commandPool, nullptr);
 }
 
 VkCommandPool VulkanResourceManager::GetCommandPool()
@@ -264,6 +266,7 @@ void VulkanResourceManager::createPipelineLayout(VkPipelineLayoutCreateInfo* pip
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 }
+
 void VulkanResourceManager::createGraphicsPipeline(VkGraphicsPipelineCreateInfo* pipelineLayoutInfo, VkPipeline* pipeline)
 {
 	if (vkCreateGraphicsPipelines(vulkanDevice->GetInstance(), VK_NULL_HANDLE, 1, pipelineLayoutInfo, nullptr, pipeline) != VK_SUCCESS) {
@@ -315,6 +318,7 @@ void VulkanResourceManager::SyncWaitForFences(VkFence vkFence)
 	vkWaitForFences(vulkanDevice->GetInstance(), 1, &vkFence, VK_TRUE, UINT64_MAX);
 
 }
+
 void VulkanResourceManager::CreateSync() {
 
 	int maxFrameinFlight = vulkanRenderState->GetMaxFlightFrame();
@@ -337,6 +341,15 @@ void VulkanResourceManager::CreateSync() {
 		imageAvailableSemaphores[i] = CreateSemaphore(&semaphoreInfo);
 		renderFinishedSemaphores[i] = CreateSemaphore(&semaphoreInfo);
 		inFlightFences[i] = CreateFence(&fenceInfo);
+	}
+}
+
+void VulkanResourceManager::DestroySync()
+{
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		vkDestroySemaphore(vulkanDevice->GetInstance(), renderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(vulkanDevice->GetInstance(), imageAvailableSemaphores[i], nullptr);
+		vkDestroyFence(vulkanDevice->GetInstance(), inFlightFences[i], nullptr);
 	}
 }
 
@@ -381,7 +394,6 @@ void VulkanResourceManager::ResetFence()
 
 void VulkanResourceManager::GraphicQueueSubmit(VkCommandBuffer vkCommandBuffer)
 {
-
 	int currFrame = vulkanRenderState->GetCurrentFrame();
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

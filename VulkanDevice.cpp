@@ -48,3 +48,8 @@ void VulkanDevice::createLogicalDevice() {
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
 }
+
+void VulkanDevice::destroyLogicalDevice()
+{
+	vkDestroyDevice(device, nullptr);
+}

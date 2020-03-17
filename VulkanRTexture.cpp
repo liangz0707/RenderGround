@@ -10,10 +10,16 @@ VulkanRTexture::VulkanRTexture(
 	VkImageView vkTextureImageView,
 	VkDeviceMemory vkTextureImageMemory)
 {
+
 	this->texWidth = texWidth;
 	this->texHeight = texHeight;
 	this->texChannel = texChannel;
 	this->vkTextureImage = vkTextureImage;
 	this->vkTextureImageView = vkTextureImageView;
 	this->vkTextureImageMemory = vkTextureImageMemory;
+}
+
+VulkanRTexture::~VulkanRTexture()
+{
+
 }

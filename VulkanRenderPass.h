@@ -14,7 +14,6 @@ class VulkanPipelineResource;
 class VulkanRenderPass
 {
 private:
-
 	VkRenderPass renderPass;
 	VkDescriptorPool uniformDescriptorPool;
 	std::vector<VkDescriptorSet> uniformDescriptorSets;
@@ -30,6 +29,7 @@ public :
 	void createGraphicPipelines(VulkanPipelineResource *vulkanPipelineResource);
 	void destroyGraphicPipelines();
 	void createUniformDescriptorSetLayout();
+	void destroyUniformDescriptorSetLayout();
 	void createUniformDescriptorPool();
 	void destroyUniformDescriptorPool();
 

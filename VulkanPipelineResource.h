@@ -14,13 +14,16 @@ public:
 	VulkanPipelineResource();
 
 	void createObjectDescriptorPool();
+	void destroyObjectDescriptorPool();
 	void createObjectDescriptorSetLayout();
+	void destroyObjectDescriptorSetLayout();
 	VkDescriptorSet createObjectDescriptorSet(
 		VkBuffer preEntityUniformBuffer,
 		VkSampler vkTextureSampler,
 		VkImageView vkTextureImageView);
 
 	void createTextureSampler();
+	void destroyTextureSampler();
 	void createCommandBuffers();
 	bool hasStencilComponent(VkFormat format);
 	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
@@ -46,7 +49,9 @@ public:
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 	void createUniformBuffers(VkDeviceSize bufferSize);
+
 	void destroyUniformBuffers();
+
 	void createPreUniformBuffer(
 		VkDeviceSize bufferSize,
 		VkBuffer& preObjectBuffer,

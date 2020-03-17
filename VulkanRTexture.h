@@ -1,5 +1,9 @@
 #pragma once
 #include "Common.h"
+#include "VulkanResourceManager.h"
+
+class VulkanResourceManager;
+
 class VulkanRTexture
 {
 
@@ -26,6 +30,18 @@ public:
 	{
 		return vkTextureImageView;
 	}
+
+	VkImage GetImage()
+	{
+		return vkTextureImage;
+	}
+
+	VkDeviceMemory GetTextureImageMemory()
+	{
+		return vkTextureImageMemory;
+	}
+
+	~VulkanRTexture();
 
 private:
 	int texWidth;

@@ -30,6 +30,15 @@ void VulkanFramebuffer::createSwapChainFrameBuffers(VulkanSwapChain * vulkanSwap
 	}
 }
 
+void VulkanFramebuffer::destroySwapChainFrameBuffers()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+
+	for (size_t i = 0; i < vVulkanFrameBuffer.size(); i++) {
+		vkDestroyFramebuffer(RM->GetDevice()->GetInstance(), vVulkanFrameBuffer[i], nullptr);
+	}
+}
+
 void VulkanFramebuffer::createDepthResource(VulkanSwapChain* vulkanSwapChain)
 { 
 	VulkanResourceManager * RM = VulkanResourceManager::GetResourceManager();
@@ -44,9 +53,7 @@ void VulkanFramebuffer::createDepthResource(VulkanSwapChain* vulkanSwapChain)
 	);
 
 	depthImageView = RM->createImageView(depthImage, RM->findDepthFormat(), VK_IMAGE_ASPECT_DEPTH_BIT);
-
 }
-
 
 void VulkanFramebuffer::destroyDepthResource()
 {
@@ -55,14 +62,4 @@ void VulkanFramebuffer::destroyDepthResource()
 	vkDestroyImageView(RM->GetDevice()->GetInstance(), depthImageView, nullptr);
 	vkDestroyImage(RM->GetDevice()->GetInstance(), depthImage, nullptr);
 	vkFreeMemory(RM->GetDevice()->GetInstance(), depthImageMemory, nullptr);
-
-}
-
-void VulkanFramebuffer::destroySwapChainFrameBuffers()
-{
-	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-
-	for (size_t i = 0; i < vVulkanFrameBuffer.size(); i++) {
-		vkDestroyFramebuffer(RM->GetDevice()->GetInstance(), vVulkanFrameBuffer[i], nullptr);
-	}
 }

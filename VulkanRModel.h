@@ -20,6 +20,17 @@ public:
 		this->indexSize = indexSize;
 	}
 
+	void SetVertexBufferMemory(VkDeviceMemory vertexBufferMemory)
+	{
+		this->vertexBufferMemory = vertexBufferMemory;
+	}
+
+	void SetIndexBufferMemory(VkDeviceMemory indexBufferMemory)
+	{
+		this->indexBufferMemory = indexBufferMemory;
+	}
+
+
 	VkBuffer GetIndexBuffer()
 	{
 		return indexBuffer;
@@ -29,6 +40,17 @@ public:
 	{
 		return vertexBuffer;
 	}
+
+	VkDeviceMemory GetIndexBufferMemory()
+	{
+		return indexBufferMemory;
+	}
+
+	VkDeviceMemory GetVertexBufferMemory()
+	{
+		return vertexBufferMemory;
+	}
+
 
 	size_t GetIndexSize()
 	{
@@ -46,15 +68,35 @@ public:
 		return vkDescriptorSet;
 	}
 
-private:
-	VkImage textureImage;
-	VkImageView textureImageView;
-	VkDeviceMemory textureImageMemory;
+	void SetDescriptorSetBufferMemory(VkDeviceMemory vkDescriptorSetBufferMemory)
+	{
+		this->vkDescriptorSetBufferMemory = vkDescriptorSetBufferMemory;
+	}
 
+	VkDeviceMemory GetDescriptorSetBufferMemory()
+	{
+		return vkDescriptorSetBufferMemory;
+	}
+
+	void SetDescriptorSetBuffer(VkBuffer vkDescriptorSetBuffer)
+	{
+		this->vkDescriptorSetBuffer = vkDescriptorSetBuffer;
+	}
+
+	VkBuffer GetDescriptorSetBuffer()
+	{
+		return vkDescriptorSetBuffer;
+	}
+
+private:
 	VkDescriptorSet vkDescriptorSet;
 
 	size_t indexSize;
 	VkBuffer vertexBuffer;
 	VkBuffer indexBuffer;
+	VkBuffer vkDescriptorSetBuffer;
+	VkDeviceMemory vkDescriptorSetBufferMemory;
+	VkDeviceMemory vertexBufferMemory;
+	VkDeviceMemory indexBufferMemory;
 };
 

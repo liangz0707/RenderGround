@@ -31,6 +31,7 @@ public:
 	void recreateSwapChain();
 	void cleanupSwapChain();
 	void cleanup();
+
 public:
 	VulkanApplication* vulkanApplication;
 	VulkanRenderPass* vulkanRenderPass;
@@ -38,5 +39,6 @@ public:
 	VulkanSync* vulkanSync;
 	VulkanPipelineResource* vulkanPipelineResource;
 	VulkanSceneManager* vulkanSceneManager;
+	VulkanTestRendering* vulkanRendering;
 };
 

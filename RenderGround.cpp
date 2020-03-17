@@ -7,7 +7,7 @@ RenderGround::RenderGround()
 
 void RenderGround::run()
 {
-	vulkanApplication = new VulkanApplication();
+	vulkanApplication = new VulkanApplication(800, 600);
 	vulkanApplication->createWindow();
 	vulkanApplication->createInstance();
 	vulkanApplication->createSurface();
@@ -56,7 +56,7 @@ void RenderGround::run()
 	vulkanCommandBuffer = new VulkanFrameRenderCommandBuffer();
 	vulkanCommandBuffer->createCommandBuffer(RM->GetCommandPool(), commandBufferSize);
 
-	VulkanTestRendering* vulkanRendering = new VulkanTestRendering(vulkanRenderPass);
+	vulkanRendering = new VulkanTestRendering(vulkanRenderPass);
 	vulkanRendering->SetSceneManager(vulkanSceneManager);
 	vulkanRendering->Config(vulkanCommandBuffer);
 
@@ -68,18 +68,17 @@ void RenderGround::run()
 		drawFrame();
 	}
 
-	//clean();
-
 	vkDeviceWaitIdle(vulkanDevice->GetInstance());
+
+
+	cleanup();
 }
 
 void RenderGround::drawFrame()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	
-	//vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 	RM->WaitForFences();
-
 
 	uint32_t imageIndex;
 	//VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
@@ -114,9 +113,9 @@ void RenderGround::drawFrame()
 
 	vkResult = RM->PresentQueueSubmit(imageIndex);
 
-	int framebufferResized = false;
-	if (vkResult == VK_ERROR_OUT_OF_DATE_KHR || vkResult == VK_SUBOPTIMAL_KHR || framebufferResized) {
-		framebufferResized = false;
+	
+	if (vkResult == VK_ERROR_OUT_OF_DATE_KHR || vkResult == VK_SUBOPTIMAL_KHR || vulkanApplication->IsResized()) {
+		
 		recreateSwapChain();
 	}
 	else if (vkResult != VK_SUCCESS) {
@@ -130,20 +129,9 @@ void RenderGround::drawFrame()
 void RenderGround::cleanupSwapChain() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	/*
-	vkDestroyImageView(device, depthImageView, nullptr);
-	vkDestroyImage(device, depthImage, nullptr);
-	vkFreeMemory(device, depthImageMemory, nullptr);
-	*/
+
 	RM->GetFramebuffer()->destroyDepthResource();
-
-	/*
-	for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
-		vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
-	}
-	*/
 	RM->GetFramebuffer()->destroySwapChainFrameBuffers();
-
 	/*
 	vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 	*/
@@ -179,14 +167,28 @@ void RenderGround::cleanupSwapChain() {
 	vulkanPipelineResource->destroyUniformBuffers();
 
 	//vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-	vulkanRenderPass->createUniformDescriptorPool();
+	vulkanRenderPass->destroyUniformDescriptorPool();
 }
 
 void RenderGround::cleanup()
 {
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+
 	cleanupSwapChain();
 
+	vulkanRenderPass->destroyUniformDescriptorSetLayout();
 
+	vulkanPipelineResource->destroyObjectDescriptorPool();
+	vulkanPipelineResource->destroyObjectDescriptorSetLayout();
+	vulkanPipelineResource->destroyTextureSampler();
+
+	vulkanSceneManager->unloadTextures();
+	vulkanSceneManager->unloadModels();
+	
+	RM->DestroySync();
+	RM->DestroyCommandPool();
+	RM->GetDevice()->destroyLogicalDevice();
+	
 	vulkanApplication->destroySurface();
 	vulkanApplication->destroyInstance();
 	vulkanApplication->destroyWindow();
@@ -194,44 +196,36 @@ void RenderGround::cleanup()
 
 void RenderGround::recreateSwapChain()
 {
-	/*
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-
-	int width = 0, height = 0;
-	glfwGetFramebufferSize(RM->GetApplication()->GetWindow(), &width, &height);
-	while (width == 0 || height == 0) {
-		glfwGetFramebufferSize(RM->GetApplication()->GetWindow(), &width, &height);
-		glfwWaitEvents();
-	}
+	vulkanApplication->updateWindowSize();
 
 	vkDeviceWaitIdle(RM->GetDevice()->GetInstance());
 
 	cleanupSwapChain();
 
-	createSwapChain();
-	//The image views need to be recreated because they are based directly on the swap chain images. 
-	createImageViews();
-	//The render pass needs to be recreated because it depends on the format of the swap chain images
-	createRenderPass();
-	//Viewport and scissor rectangle size is specified during graphics pipeline creation
-	//It is possible to avoid this by using dynamic state for the viewports and scissor rectangles. 
-	createGraphicsPipeline();
-	createDepthResources();
-	//Finally, the framebuffers and command buffers also directly depend on the swap chain images.
-	createFramebuffers();
-	createUniformBuffers();
-	createDescriptorPool();
-	createDescriptorSets();
-	createCommandBuffers();
-	*/
+	RM->GetSwapChain()->createSwapChain();
+	RM->GetSwapChain()->createSwapChainImageViews();
+
+	vulkanRenderPass->createRenderPass();
+	vulkanPipelineResource->createUniformBuffers(sizeof(UniformBufferObject));
+
+	//vulkanRenderPass->createUniformDescriptorSetLayout();
+	vulkanRenderPass->createUniformDescriptorPool();
+	vulkanRenderPass->createUniformDescriptorSets(
+		vulkanPipelineResource->GetUniformBuffers());
+	vulkanRenderPass->createGraphicPipelines(vulkanPipelineResource);
+
+	RM->GetFramebuffer()->createDepthResource(RM->GetSwapChain());
+	RM->GetFramebuffer()->createSwapChainFrameBuffers(RM->GetSwapChain(), vulkanRenderPass);
+
+	size_t commandBufferSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	vulkanCommandBuffer->createCommandBuffer(RM->GetCommandPool(), commandBufferSize);
+
+	vulkanRendering->Config(vulkanCommandBuffer);
 }
 
 
 void RenderGround::mainLoop() {
-
-
-
-
 }
 
 

@@ -60,6 +60,8 @@ public:
 		VkDeviceMemory& bufferMemory);
 
 	void createCommandPool();
+	void DestroyCommandPool();
+
 	VkCommandPool GetCommandPool();
 
 	VkFormat findDepthFormat();
@@ -93,6 +95,7 @@ public:
 	}
 
 	void CreateSync();
+	void DestroySync();
 	void WaitForFences();
 	void ResetFence();
 

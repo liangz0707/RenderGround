@@ -1,8 +1,9 @@
 #include "VulkanApplication.h"
 
-VulkanApplication ::VulkanApplication()
+VulkanApplication ::VulkanApplication(int width, int height)
 {
-
+	windowWidth = width;
+	windowHeight = height;
 }
 
 void VulkanApplication::createInstance()
@@ -122,6 +123,17 @@ void VulkanApplication::createWindow() {
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
+
+void VulkanApplication::updateWindowSize()
+{
+	glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+	while (windowWidth == 0 || windowHeight == 0) {
+		glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+		glfwWaitEvents();
+	}
+	ResetResizedFlag();
+}
+
 void VulkanApplication::destroyWindow()
 {
 	glfwDestroyWindow(window);

@@ -66,7 +66,11 @@ void VulkanFrameRenderCommandBuffer::createCommandBuffer(VkCommandPool commandPo
 void VulkanFrameRenderCommandBuffer::destroyCommandBuffer()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	vkFreeCommandBuffers(RM->GetDevice()->GetInstance(), commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+	vkFreeCommandBuffers(
+		RM->GetDevice()->GetInstance(),
+		RM->GetCommandPool(), 
+		static_cast<uint32_t>(commandBuffers.size()), 
+		commandBuffers.data());
 
 }
 

@@ -108,6 +108,15 @@ void VulkanRenderPass::createUniformDescriptorSetLayout() {
 	}
 }
 
+void VulkanRenderPass::destroyUniformDescriptorSetLayout() {
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+
+
+	vkDestroyDescriptorSetLayout(vkDevice, uniformDescriptorSetLayout, nullptr);
+	
+}
+
 
 void VulkanRenderPass::createRenderPass() {
 
@@ -236,6 +245,9 @@ void VulkanRenderPass::createGraphicPipelines(VulkanPipelineResource *vulkanPipe
 		RM->GetExtent(),
 		uniformDescriptorSetLayout,
 		renderPass);
+
+	vkDestroyShaderModule(RM->GetDevice()->GetInstance(), fragShaderModule, nullptr);
+	vkDestroyShaderModule(RM->GetDevice()->GetInstance(), vertShaderModule, nullptr);
 
 }
 

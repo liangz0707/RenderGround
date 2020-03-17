@@ -112,6 +112,13 @@ void VulkanPipelineResource::createObjectDescriptorPool() {
 	}
 }
 
+void VulkanPipelineResource::destroyObjectDescriptorPool()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+	vkDestroyDescriptorPool(vkDevice, objectDescriptorPool, nullptr);
+}
+
 
 void VulkanPipelineResource::createObjectDescriptorSetLayout() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
@@ -142,6 +149,13 @@ void VulkanPipelineResource::createObjectDescriptorSetLayout() {
 	if (vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &objectDescriptorSetLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout!");
 	}
+}
+
+void VulkanPipelineResource::destroyObjectDescriptorSetLayout()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+	vkDestroyDescriptorSetLayout(vkDevice, objectDescriptorSetLayout, nullptr);
 }
 
 
@@ -197,9 +211,6 @@ VkDescriptorSet VulkanPipelineResource::createObjectDescriptorSet(
 
 	return vkDescriptorSet;
 }
-
-
-
 
 void VulkanPipelineResource::createVertexBuffer(VkDeviceSize bufferSize,
 										void * srcData,
@@ -316,6 +327,13 @@ void VulkanPipelineResource::createTextureSampler() {
 	RM->createSampler(&samplerInfo, textureSampler);
 }
 
+void VulkanPipelineResource::destroyTextureSampler()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+	vkDestroySampler(vkDevice, textureSampler, nullptr);
+}
+
 
 bool VulkanPipelineResource::hasStencilComponent(VkFormat format) {
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
@@ -394,7 +412,6 @@ void VulkanPipelineResource::createTextureImage(unsigned char* pixels,
 	RM->unMapMemory(stagingBufferMemory);
 
 	Utility::freeImage(pixels);
-
 
 	RM->createImage(texWidth, texHeight,
 		VK_FORMAT_R8G8B8A8_SRGB,
