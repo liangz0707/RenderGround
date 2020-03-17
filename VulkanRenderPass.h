@@ -26,13 +26,14 @@ public :
 	VkRenderPass GetInstance();
 	
 	void createRenderPass();
+	void destroyRenderPass();
 	void createGraphicPipelines(VulkanPipelineResource *vulkanPipelineResource);
-
+	void destroyGraphicPipelines();
 	void createUniformDescriptorSetLayout();
 	void createUniformDescriptorPool();
+	void destroyUniformDescriptorPool();
 
-	void createUniformDescriptorSets(VulkanFramebuffer* vulkanFramebuffer,
-		std::vector<VkBuffer> uniformBuffers);
+	void createUniformDescriptorSets(std::vector<VkBuffer> uniformBuffers);
 
 	VkDescriptorSet GetUniformDescriptorSetByIndex(int i)
 	{

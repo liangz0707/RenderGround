@@ -23,6 +23,8 @@ public:
 		VkDescriptorSetLayout descriptorSetLayout,
 		VkRenderPass renderPass);
 
+	void destroyGraphicPipeline();
+
 	VkPipeline GetInstance()
 	{
 		return graphicsPipeline;

@@ -180,3 +180,11 @@ void VulkanGraphicPipeline::createGraphicsPipeline(
 
 
 }
+
+void VulkanGraphicPipeline::destroyGraphicPipeline()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+	vkDestroyPipeline(vkDevice, graphicsPipeline, nullptr);
+	vkDestroyPipelineLayout(vkDevice, vkPipelineLayout, nullptr);
+}

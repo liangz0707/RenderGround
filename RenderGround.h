@@ -28,8 +28,10 @@ public:
 	void run();
 	void drawFrame();
 	void mainLoop();
-
+	void recreateSwapChain();
+	void cleanupSwapChain();
 public:
+	VulkanRenderPass* vulkanRenderPass;
 	VulkanFrameRenderCommandBuffer* vulkanCommandBuffer;
 	VulkanSync* vulkanSync;
 	VulkanPipelineResource* vulkanPipelineResource;

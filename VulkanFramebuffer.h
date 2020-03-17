@@ -11,8 +11,10 @@ class VulkanFramebuffer
 {
 public:
 	void createDepthResource(VulkanSwapChain* vulkanSwapChain);
-	
+	void destroyDepthResource();
 	void createSwapChainFrameBuffers(VulkanSwapChain * vulkanSwapChain, VulkanRenderPass* vulkanRenderPass);
+	void destroySwapChainFrameBuffers();
+
 	size_t GetFrameBufferSize()
 	{
 		return vVulkanFrameBuffer.size();

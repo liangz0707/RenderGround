@@ -1,9 +1,7 @@
 #include "VulkanSwapChain.h"
 
-VulkanSwapChain::VulkanSwapChain(VulkanApplication* vulkanInstance, VulkanDevice* vulkanDevice)
+VulkanSwapChain::VulkanSwapChain()
 {
-	this->vulkanInstance = vulkanInstance;
-	this->vulkanDevice = vulkanDevice;
 
 }
 
@@ -50,17 +48,18 @@ VkSurfaceFormatKHR VulkanSwapChain::chooseSwapSurfaceFormat(const std::vector<Vk
 }
 
 VkExtent2D VulkanSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+
 	if (capabilities.currentExtent.width != UINT32_MAX) {
 
 		std::cout << "Swap Chain Size:" << std::endl;
 		std::cout << "\t" << "actualExtent:" << capabilities.currentExtent.width << "  " << capabilities.currentExtent.height << std::endl;
 
-
 		return capabilities.currentExtent;
 	}
 	else {
 		int width, height;
-		glfwGetFramebufferSize(vulkanInstance->GetWindow(), &width, &height);
+		glfwGetFramebufferSize(RM->GetApplication()->GetWindow(), &width, &height);
 
 		VkExtent2D actualExtent = {
 			static_cast<uint32_t>(width),
@@ -79,8 +78,13 @@ VkExtent2D VulkanSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& cap
 	}
 }
 
+
+
 void  VulkanSwapChain::createSwapChain() {
-	SwapChainSupportDetails swapChainSupport = Utility::querySwapChainSupport(vulkanInstance->GetVkPhysicalDevice(), vulkanInstance->GetVkSurfaceKHR());
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+
+	SwapChainSupportDetails swapChainSupport = Utility::querySwapChainSupport(RM->GetApplication()->GetVkPhysicalDevice(), RM->GetApplication()->GetVkSurfaceKHR());
 
 	//sRGB and R8G8B8  ColorSpace is Used to HDR
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -103,7 +107,7 @@ void  VulkanSwapChain::createSwapChain() {
 	// Create Info
 	VkSwapchainCreateInfoKHR createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	createInfo.surface = vulkanInstance->GetVkSurfaceKHR();
+	createInfo.surface = RM->GetApplication()->GetVkSurfaceKHR();
 
 	createInfo.minImageCount = imageCount;
 	//SwapChain如果格式是SRGB，那么在写入的时候会自动进行SRGB编码，开放操作。，所以Shader里面需要进行编码操作。
@@ -116,7 +120,7 @@ void  VulkanSwapChain::createSwapChain() {
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	// Next, we need to specify how to handle swap chain images that will be used across multiple queue families
-	QueueFamilyIndices indices = vulkanInstance->findQueueFamilies(vulkanInstance->GetVkPhysicalDevice());
+	QueueFamilyIndices indices = RM->GetApplication()->findQueueFamilies(RM->GetApplication()->GetVkPhysicalDevice());
 	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(),indices.presentFamily.value() };
 
 	// An image is owned by one queue family at a time and ownership must be explicitly transfered before using it in another queue family. This option offers the best performance.
@@ -144,21 +148,28 @@ void  VulkanSwapChain::createSwapChain() {
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
 	//
-	if (vkCreateSwapchainKHR(vulkanDevice->GetInstance(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
+	if (vkCreateSwapchainKHR(RM->GetDevice()->GetInstance(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create swap chain!");
 	}
 
 	//交换链现在已经创建，所以剩下的就是检索其中VkImages的句柄
 	//这些映像是由交换链实现创建的，一旦交换链被销毁，它们将被自动清除
-	vkGetSwapchainImagesKHR(vulkanDevice->GetInstance(), swapChain, &imageCount, nullptr);
+	vkGetSwapchainImagesKHR(RM->GetDevice()->GetInstance(), swapChain, &imageCount, nullptr);
 	swapChainImages.resize(imageCount);
-	vkGetSwapchainImagesKHR(vulkanDevice->GetInstance(), swapChain, &imageCount, swapChainImages.data());
+	vkGetSwapchainImagesKHR(RM->GetDevice()->GetInstance(), swapChain, &imageCount, swapChainImages.data());
 
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
 
 	std::cout << "Swap chain Images size:" << imageCount << std::endl;
 
+}
+
+
+void VulkanSwapChain::destroySwapChain()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	vkDestroySwapchainKHR(RM->GetDevice()->GetInstance(), swapChain, nullptr);
 }
 
 void VulkanSwapChain::createSwapChainImageViews() {
@@ -169,19 +180,29 @@ void VulkanSwapChain::createSwapChainImageViews() {
 	}
 }
 
+void VulkanSwapChain::destroySwapChainImageViews() {
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	
+	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+		 RM->destroyImageView(swapChainImageViews[i]);
+	}
+}
+
 
 bool VulkanSwapChain::isDeviceSuitable(VkPhysicalDevice device) {
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
 	VkPhysicalDeviceFeatures supportedFeatures;
 	vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 	// 检查QueueFamily
-	QueueFamilyIndices indices = vulkanInstance->findQueueFamilies(vulkanInstance->GetVkPhysicalDevice());
+	QueueFamilyIndices indices = RM->GetApplication()->findQueueFamilies(RM->GetApplication()->GetVkPhysicalDevice());
 
 	bool extensionsSupported = Utility::checkDeviceExtensionSupport(device);
 
 	bool swapChainAdequate = false;
 	if (extensionsSupported) {
-		SwapChainSupportDetails swapChainSupport =Utility:: querySwapChainSupport(device, vulkanInstance->GetVkSurfaceKHR());
+		SwapChainSupportDetails swapChainSupport =Utility:: querySwapChainSupport(device, RM->GetApplication()->GetVkSurfaceKHR());
 		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 	}
 

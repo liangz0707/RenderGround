@@ -44,8 +44,9 @@ public:
 		VkDeviceMemory &textureImageMemory);
 
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-	
+
 	void createUniformBuffers(VkDeviceSize bufferSize);
+	void destroyUniformBuffers();
 	void createPreUniformBuffer(
 		VkDeviceSize bufferSize,
 		VkBuffer& preObjectBuffer,

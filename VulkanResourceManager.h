@@ -34,7 +34,8 @@ public:
 	VulkanSwapChain* GetSwapChain();
 
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags flags);
-	
+	void destroyImageView(VkImageView imageView);
+
 	void createPipelineLayout(VkPipelineLayoutCreateInfo* pipelineLayoutInfo, VkPipelineLayout* pipelineLayout);
 	void createGraphicsPipeline(VkGraphicsPipelineCreateInfo* pipelineLayoutInfo, VkPipeline* pipeline);
 	
@@ -95,15 +96,19 @@ public:
 	void WaitForFences();
 	void ResetFence();
 
-	uint32_t AcquireNextImageKHR();
+	VkResult AcquireNextImageKHR(uint32_t&);
 	void CheckPrivousFrameFinishend(uint32_t imageIndex);
 
 	//
-	void PresentQueueSubmit(uint32_t imageIndex);
+	VkResult PresentQueueSubmit(uint32_t imageIndex);
 	void GraphicQueueSubmit(VkCommandBuffer);
 
 	void UpdateRenderState();
 		
+	VulkanApplication *GetApplication()
+	{
+		return vulkanInstance;
+	}
 private:
 	VulkanResourceManager(
 		VulkanDevice* vulkanDevice, 

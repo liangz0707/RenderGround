@@ -22,8 +22,11 @@ class VulkanFrameRenderCommandBuffer
 {
 
 public:
-	VulkanFrameRenderCommandBuffer(VkCommandPool commandPool, size_t commandBufferSize);
+	VulkanFrameRenderCommandBuffer();
 	~VulkanFrameRenderCommandBuffer();
+
+	void createCommandBuffer(VkCommandPool commandPool, size_t commandBufferSize);
+	void destroyCommandBuffer();
 
 	VkCommandBuffer GetCommandBufferByIndex(int index)
 	{

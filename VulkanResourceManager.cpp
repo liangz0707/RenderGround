@@ -305,6 +305,10 @@ VkImageView VulkanResourceManager::createImageView(VkImage image,
 	return imageView;
 }
 
+void VulkanResourceManager::destroyImageView(VkImageView imageView)
+{
+	vkDestroyImageView(vulkanDevice->GetInstance(), imageView, nullptr);
+}
 
 void VulkanResourceManager::SyncWaitForFences(VkFence vkFence)
 {
@@ -343,9 +347,8 @@ void VulkanResourceManager::WaitForFences()
 	RM->SyncWaitForFences(inFlightFences[currFrame]);
 }
 
-uint32_t VulkanResourceManager::AcquireNextImageKHR()
+VkResult VulkanResourceManager::AcquireNextImageKHR(uint32_t& imageIndex)
 {
-	uint32_t imageIndex;
 	int currFrame = vulkanRenderState->GetCurrentFrame();
 	VkResult result = vkAcquireNextImageKHR(vulkanDevice->GetInstance(),
 		vulkanSwapChain->GetInstance(), 
@@ -353,16 +356,7 @@ uint32_t VulkanResourceManager::AcquireNextImageKHR()
 		imageAvailableSemaphores[currFrame],
 		VK_NULL_HANDLE, &imageIndex);
 
-	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		//recreateSwapChain();
-		return imageIndex;
-	}
-
-	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-		throw std::runtime_error("failed to acquire swap chain image!");
-	}
-
-	return imageIndex;
+	return result;
 }
 
 void  VulkanResourceManager::CheckPrivousFrameFinishend(uint32_t imageIndex)
@@ -411,7 +405,7 @@ void VulkanResourceManager::GraphicQueueSubmit(VkCommandBuffer vkCommandBuffer)
 	}
 }
 
-void VulkanResourceManager::PresentQueueSubmit(uint32_t imageIndex)
+VkResult VulkanResourceManager::PresentQueueSubmit(uint32_t imageIndex)
 {
 	VkPresentInfoKHR presentInfo = {};
 
@@ -432,14 +426,7 @@ void VulkanResourceManager::PresentQueueSubmit(uint32_t imageIndex)
 	VkResult result = vkQueuePresentKHR(vulkanDevice->GetPresentQueue(), &presentInfo);
 	vkQueueWaitIdle(vulkanDevice->GetPresentQueue());
 
-	int framebufferResized = false;
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
-		framebufferResized = false;
-		//recreateSwapChain();
-	}
-	else if (result != VK_SUCCESS) {
-		throw std::runtime_error("failed to present swap chain image!");
-	}
+	return result;
 }
 
 void VulkanResourceManager::createTextureSampler(VkSamplerCreateInfo *samplerInfo,VkSampler& sampler)

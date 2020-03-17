@@ -17,11 +17,10 @@ VkPipelineLayout VulkanRenderPass::GetPipelineLayout()
 }
 
 void VulkanRenderPass::createUniformDescriptorSets(
-	VulkanFramebuffer* vulkanFramebuffer,
 	std::vector<VkBuffer> uniformBuffers) {
 	
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t layoutsSize = vulkanFramebuffer->GetFrameBufferSize();
+	size_t layoutsSize = RM->GetSwapChain()->GetSwapChainImageSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
 	std::vector<VkDescriptorSetLayout> layouts(layoutsSize, uniformDescriptorSetLayout);
@@ -60,7 +59,7 @@ void VulkanRenderPass::createUniformDescriptorSets(
 void VulkanRenderPass::createUniformDescriptorPool() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	size_t layoutsSize = RM->GetSwapChain()->GetSwapChainImageSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
 	std::array<VkDescriptorPoolSize, 1> poolSizes = {};
@@ -78,10 +77,15 @@ void VulkanRenderPass::createUniformDescriptorPool() {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }
+void VulkanRenderPass::destroyUniformDescriptorPool() {
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+	vkDestroyDescriptorPool(vkDevice, uniformDescriptorPool, nullptr);
+}
 
 void VulkanRenderPass::createUniformDescriptorSetLayout() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
 	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
@@ -203,6 +207,12 @@ void VulkanRenderPass::createRenderPass() {
 	renderPassInfo.pDependencies = &dependency;
 }
 
+void VulkanRenderPass::destroyRenderPass() {
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+	vkDestroyRenderPass(vkDevice, renderPass, nullptr);
+}
 void VulkanRenderPass::createGraphicPipelines(VulkanPipelineResource *vulkanPipelineResource)
 {
 
@@ -229,3 +239,8 @@ void VulkanRenderPass::createGraphicPipelines(VulkanPipelineResource *vulkanPipe
 
 }
 
+
+void VulkanRenderPass::destroyGraphicPipelines()
+{
+	vulkanGraphicPipeline->destroyGraphicPipeline();
+}

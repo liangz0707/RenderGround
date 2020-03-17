@@ -9,8 +9,10 @@ void VulkanPipelineResource::createUniformBuffers(VkDeviceSize bufferSize)
 {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	uniformBuffers.resize(RM->GetFramebuffer()->GetFrameBufferSize());
-	uniformBuffersMemory.resize(RM->GetFramebuffer()->GetFrameBufferSize());
+	int uniformBufferSize = RM->GetSwapChain()->GetSwapChainImageSize();
+
+	uniformBuffers.resize(uniformBufferSize);
+	uniformBuffersMemory.resize(uniformBufferSize);
 
 	for (size_t i = 0; i < uniformBuffers.size(); i++)
 	{
@@ -19,6 +21,16 @@ void VulkanPipelineResource::createUniformBuffers(VkDeviceSize bufferSize)
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			uniformBuffers[i],
 			uniformBuffersMemory[i]);
+	}
+}
+
+void VulkanPipelineResource::destroyUniformBuffers()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	for (size_t i = 0; i < uniformBuffers.size(); i++)
+	{
+		vkDestroyBuffer(RM->GetDevice()->GetInstance(), uniformBuffers[i], nullptr);
+		vkFreeMemory(RM->GetDevice()->GetInstance(), uniformBuffersMemory[i], nullptr);
 	}
 }
 
@@ -78,7 +90,7 @@ VkDeviceMemory VulkanPipelineResource::GetUboMemoryByIndex(int swapChainImageInd
 void VulkanPipelineResource::createObjectDescriptorPool() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	size_t layoutsSize = RM->GetSwapChain()->GetSwapChainImageSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
 	// Model Number
@@ -103,7 +115,7 @@ void VulkanPipelineResource::createObjectDescriptorPool() {
 
 void VulkanPipelineResource::createObjectDescriptorSetLayout() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t layoutsSize = RM->GetFramebuffer()->GetFrameBufferSize();
+	size_t layoutsSize = RM->GetSwapChain()->GetSwapChainImageSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
 	VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
