@@ -13,6 +13,8 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanSync.h"
 
+#include "InputController.h"
+
 class VulkanSync;
 class VulkanTestRendering;
 class VulkanRenderPass;
@@ -21,10 +23,12 @@ class VulkanSceneManager;
 class VulkanFrameRenderCommandBuffer;
 class VulkanSingleTimeCommandBuffer;
 
-class RenderGround
+
+class VulkanRenderGround
 {
 public:
-	RenderGround();
+	VulkanRenderGround();
+	void init(HINSTANCE windowInstance, HWND window);
 	void run();
 	void drawFrame();
 	void mainLoop();

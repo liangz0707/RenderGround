@@ -1,9 +1,11 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
+//#define GLFW_INCLUDE_VULKAN
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <GLFW/glfw3.h>  
+#include <vulkan/vulkan.h>
+#include <Windows.h>
+#include <vulkan/vulkan_win32.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 

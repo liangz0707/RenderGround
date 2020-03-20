@@ -17,7 +17,7 @@ void VulkanApplication::createInstance()
 	*/
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.pApplicationName = "Hello Valkun";
+	appInfo.pApplicationName = "Render Ground";
 	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.pEngineName = "No Engine";
 	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -27,21 +27,25 @@ void VulkanApplication::createInstance()
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
+	std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
 
-	uint32_t glfwExtensionCount = 0;
-	const char** glfwExtensions;
+#if defined(_WIN32)
 
-	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-#ifndef INFO
-	std::cout << "Instance Required Extension:" << std::endl;
+	enabledExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME); 
 
-	for (uint32_t i = 0; i < glfwExtensionCount; i++)
-	{
-		std::cout << "\t" << glfwExtensions[i] << std::endl;
-	}
-#endif // INFO
-	createInfo.enabledExtensionCount = glfwExtensionCount;
-	createInfo.ppEnabledExtensionNames = glfwExtensions;
+#elif defined(__ANDROID__)
+
+	enabledExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+
+#elif defined(__linux__)
+
+	enabledExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+
+
+#endif
+
+	createInfo.enabledExtensionCount = enabledExtensions.size();
+	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
 	if (enableValidationLayers) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
@@ -108,36 +112,25 @@ void VulkanApplication::checkExtension()
 #endif // INFO
 }
 
-static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-	auto app = reinterpret_cast<VulkanApplication*>(glfwGetWindowUserPointer(window));
-	app->framebufferResized = true;
-}
 
-void VulkanApplication::createWindow() {
-	glfwInit();
 
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-	window = glfwCreateWindow(WIDTH, HEIGHT, "RenderGround", nullptr, nullptr);
-	glfwSetWindowUserPointer(window, this);
-	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+void VulkanApplication::createSurface(HINSTANCE windowInstance,HWND window) {
+	VkWin32SurfaceCreateInfoKHR surfaceCreateInfo;
+	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+	surfaceCreateInfo.pNext = NULL;
+	surfaceCreateInfo.flags = 0;
+	surfaceCreateInfo.hinstance = windowInstance;
+	surfaceCreateInfo.hwnd = window;
+	
+	VkResult result =
+		vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, NULL, &surface);
+	assert(result == VK_SUCCESS);
 }
 
 void VulkanApplication::updateWindowSize()
 {
-	glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
-	while (windowWidth == 0 || windowHeight == 0) {
-		glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
-		glfwWaitEvents();
-	}
-	ResetResizedFlag();
-}
 
-void VulkanApplication::destroyWindow()
-{
-	glfwDestroyWindow(window);
-	glfwTerminate();
+	ResetResizedFlag();
 }
 
 QueueFamilyIndices VulkanApplication::findQueueFamilies(VkPhysicalDevice device) {
@@ -251,11 +244,6 @@ int VulkanApplication::rateDeviceSuitability(VkPhysicalDevice device) {
 	return score;
 }
 
-void VulkanApplication::createSurface() {
-	if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create window surface!");
-	}
-}
 
 void VulkanApplication::destroySurface() {
 	vkDestroySurfaceKHR(instance, surface, nullptr);

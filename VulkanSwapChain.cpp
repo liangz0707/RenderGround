@@ -58,8 +58,7 @@ VkExtent2D VulkanSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& cap
 		return capabilities.currentExtent;
 	}
 	else {
-		int width, height;
-		glfwGetFramebufferSize(RM->GetApplication()->GetWindow(), &width, &height);
+		int width =WIDTH , height = HEIGHT;
 
 		VkExtent2D actualExtent = {
 			static_cast<uint32_t>(width),

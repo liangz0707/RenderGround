@@ -1,10 +1,9 @@
-
 #include "Utility.h"
 #include "RenderGround.h"
 
+#include <windows.h>
 
-
-
+#ifdef CC
 //std::vector<Vertex> vertices;
 const std::vector<Vertex> vertices = {
 	{{-0.5f, -0.5f,0}, {0.0f, 1.0f, 0.0f},{1,0}},
@@ -131,9 +130,8 @@ private:
 			throw std::runtime_error("validation layers requested, but not available!");
 		}
 
-		/*
-		应用程序的信息
-		*/
+		//应用程序的信息
+	
 		VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.pApplicationName = "Hello Valkun";
@@ -2051,7 +2049,6 @@ private:
 
 };
 
-/*
 
 int main() {
 	HelloTriangleApplication app;
@@ -2066,17 +2063,7 @@ int main() {
 
 	return EXIT_SUCCESS;
 }
-*/
-int main() {
-	RenderGround* app = new RenderGround();
 
-	try {
-		app->run();
-	}
-	catch (const std::exception & e) {
-		std::cerr << e.what() << std::endl;
-		return EXIT_FAILURE;
-	}
 
-	return EXIT_SUCCESS;
-}
+#endif
+

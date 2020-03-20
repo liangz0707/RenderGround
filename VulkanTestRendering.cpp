@@ -13,16 +13,13 @@ void VulkanTestRendering::Config(VulkanFrameRenderCommandBuffer* vulkanCommandBu
 	{
 		VkCommandBuffer commandBuffer = vulkanCommandBuffer->VulkanCommandBegin(i);
 
-
 		Render(commandBuffer,
 			RM->GetFramebuffer()->GetFrameBufferByIndex(i),
 			RM->GetExtent(),
 			vulkanRenderPass->GetUniformDescriptorSetByIndex(i));
-
 		vulkanCommandBuffer->VulkanCommandEnd(i);
 	}
 }
-
 
 void VulkanTestRendering::SetSceneManager(VulkanSceneManager* vulkanSceneManager){
 	this->vulkanSceneManager = vulkanSceneManager;

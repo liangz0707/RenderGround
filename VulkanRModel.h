@@ -1,6 +1,10 @@
 #pragma once
 #include "Common.h"
 #include "VulkanModel.h"
+#include "VulkanResourceManager.h"
+
+class VulkanResourceManager;
+
 class VulkanRModel
 {
 public:
@@ -29,7 +33,6 @@ public:
 	{
 		this->indexBufferMemory = indexBufferMemory;
 	}
-
 
 	VkBuffer GetIndexBuffer()
 	{
@@ -93,33 +96,7 @@ public:
 		return ubo;
 	}
 
-	void Update()
-	{
-		VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-
-		static auto startTime = std::chrono::high_resolution_clock::now();
-
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-		UniformBufferObject ubo = {};
-	
-		ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		void* data;
-		RM->mapMemory(
-			vkDescriptorSetBufferMemory,
-			sizeof(PreEntityUniformBufferObject),
-			&data);
-
-		memcpy(
-			data,
-			&(ubo),
-			sizeof(PreEntityUniformBufferObject));
-
-		RM->unMapMemory(
-			vkDescriptorSetBufferMemory);
-	}
+	void Update();
 private:
 	glm::vec4 position;
 	PreEntityUniformBufferObject ubo;

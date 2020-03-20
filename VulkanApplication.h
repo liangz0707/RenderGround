@@ -8,7 +8,6 @@ class VulkanApplication
 
 private :
 	VkInstance instance;
-	GLFWwindow* window;
 	QueueFamilyIndices indices;
 	VkPhysicalDevice physicalDevice;
 	VkSurfaceKHR surface;
@@ -32,9 +31,7 @@ public:
 	VkSurfaceKHR GetVkSurfaceKHR() {
 		return surface;
 	}
-	GLFWwindow* GetWindow() {
-		return window;
-	}
+
 
 	int GetWindowHeight()
 	{
@@ -56,14 +53,12 @@ public:
 
 	bool framebufferResized = false;
 	VulkanApplication(int,int);
-	void createWindow();
+	void createSurface(HINSTANCE windowInstance, HWND window);
 	void updateWindowSize();
-	void destroyWindow();
 	void checkExtension();
 	void createInstance();
 	void destroyInstance();
 	bool checkValidationLayerSupport();
-	void createSurface();
 	void destroySurface();
 	void pickPhysicalDevice();
 	bool isDeviceSuitable(VkPhysicalDevice device);

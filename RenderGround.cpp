@@ -1,16 +1,15 @@
 #include "RenderGround.h"
 
-RenderGround::RenderGround()
+VulkanRenderGround::VulkanRenderGround()
 {
 
 }
 
-void RenderGround::run()
+void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 {
 	vulkanApplication = new VulkanApplication(800, 600);
-	vulkanApplication->createWindow();
 	vulkanApplication->createInstance();
-	vulkanApplication->createSurface();
+	vulkanApplication->createSurface(windowInstance, window);
 	vulkanApplication->pickPhysicalDevice();
 
 	VulkanDevice* vulkanDevice = new VulkanDevice(vulkanApplication);
@@ -61,19 +60,18 @@ void RenderGround::run()
 	vulkanRendering->Config(vulkanCommandBuffer);
 
 	RM->CreateSync();
+}
 
-	while (!glfwWindowShouldClose(vulkanApplication->GetWindow()))
+void VulkanRenderGround::run()
+{
+	while (true)
 	{
-		glfwPollEvents();
 		drawFrame();
 	}
 
-	vkDeviceWaitIdle(vulkanDevice->GetInstance());
-
-	cleanup();
 }
 
-void RenderGround::drawFrame()
+void VulkanRenderGround::drawFrame()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	
@@ -117,7 +115,7 @@ void RenderGround::drawFrame()
 
 }
 
-void RenderGround::cleanupSwapChain() {
+void VulkanRenderGround::cleanupSwapChain() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
@@ -137,9 +135,10 @@ void RenderGround::cleanupSwapChain() {
 	vulkanRenderPass->destroyUniformDescriptorPool();
 }
 
-void RenderGround::cleanup()
+void VulkanRenderGround::cleanup()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	vkDeviceWaitIdle(RM->GetDevice()->GetInstance());
 
 	cleanupSwapChain();
 
@@ -158,10 +157,9 @@ void RenderGround::cleanup()
 	
 	vulkanApplication->destroySurface();
 	vulkanApplication->destroyInstance();
-	vulkanApplication->destroyWindow();
 }
 
-void RenderGround::recreateSwapChain()
+void VulkanRenderGround::recreateSwapChain()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	vulkanApplication->updateWindowSize();
@@ -192,7 +190,7 @@ void RenderGround::recreateSwapChain()
 }
 
 
-void RenderGround::mainLoop() {
+void VulkanRenderGround::mainLoop() {
 }
 
 
