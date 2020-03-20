@@ -6,12 +6,29 @@ HINSTANCE windowInstance;
 HWND window;
 
 
+void OnSize(HWND hwnd, UINT flag, int width, int height)
+{
+	// Handle resizing
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	int width = 0;  // Macro to get the low-order word.
+	int height = 0;
 	switch (msg) {
+
 	case WM_DESTROY:
 		DestroyWindow(hWnd);
 		PostQuitMessage(0);
+		break;
+
+	case WM_SIZE: // Handle window resizing 
+		 width = LOWORD(lParam);  // Macro to get the low-order word.
+		 height = HIWORD(lParam); // Macro to get the high-order word.
+
+		// Respond to the message:
+		OnSize(hWnd, (UINT)wParam, width, height);
+
 		break;
 	case WM_PAINT:
 		ValidateRect(hWnd, NULL);
@@ -20,9 +37,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return DefWindowProc(hWnd, msg, wParam, lParam);
 		break;
 	}
-
 }
-
 
 void createWindow(HINSTANCE hInstance) {
 
@@ -69,7 +84,6 @@ void createWindow(HINSTANCE hInstance) {
 
 	if (window == NULL)
 	{
-
 		std::cerr << "Create Window Fail" << std::endl;
 	}
 
@@ -89,11 +103,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	try {
 		app->init(windowInstance, window);
 
-		MSG message;
+		MSG message = { 0 };
 
-		while (GetMessage(&message, NULL, 0, 0)) {
-			TranslateMessage(&message);
-			DispatchMessage(&message);
+		while (WM_QUIT != message.message){
+			if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE))
+			{
+				TranslateMessage(&message);
+				DispatchMessage(&message);
+			}
 
 			app->drawFrame();
 		}
