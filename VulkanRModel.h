@@ -1,9 +1,11 @@
 #pragma once
 #include "Common.h"
 #include "VulkanModel.h"
+#include "VulkanMaterial.h"
 #include "VulkanResourceManager.h"
 
 class VulkanResourceManager;
+class VulkanMaterial;
 
 class VulkanRModel
 {
@@ -54,60 +56,27 @@ public:
 		return vertexBufferMemory;
 	}
 
-
 	size_t GetIndexSize()
 	{
 		return indexSize;
 	}
 
-
-	void SetDescriptorSet(VkDescriptorSet vkDescriptorSet)
-	{
-		this->vkDescriptorSet = vkDescriptorSet;
+	VulkanMaterial* GetMaterial() {
+		return material;
 	}
 
-	VkDescriptorSet GetDescriptorSet()
-	{
-		return vkDescriptorSet;
-	}
-
-	void SetDescriptorSetBufferMemory(VkDeviceMemory vkDescriptorSetBufferMemory)
-	{
-		this->vkDescriptorSetBufferMemory = vkDescriptorSetBufferMemory;
-	}
-
-	VkDeviceMemory GetDescriptorSetBufferMemory()
-	{
-		return vkDescriptorSetBufferMemory;
-	}
-
-	void SetDescriptorSetBuffer(VkBuffer vkDescriptorSetBuffer)
-	{
-		this->vkDescriptorSetBuffer = vkDescriptorSetBuffer;
-	}
-
-	VkBuffer GetDescriptorSetBuffer()
-	{
-		return vkDescriptorSetBuffer;
-	}
-
-	PreEntityUniformBufferObject GetUniformBuffer()
-	{
-		return ubo;
-	}
+	void SetMaterial(VulkanMaterial* material);
 
 	void Update();
 private:
-	glm::vec4 position;
-	PreEntityUniformBufferObject ubo;
-
-	VkDescriptorSet vkDescriptorSet;
+	//glm::vec4 position;
 	size_t indexSize;
+	UniformBufferObject ubo;
+
 	VkBuffer vertexBuffer;
 	VkBuffer indexBuffer;
-	VkBuffer vkDescriptorSetBuffer;
-	VkDeviceMemory vkDescriptorSetBufferMemory;
 	VkDeviceMemory vertexBufferMemory;
 	VkDeviceMemory indexBufferMemory;
+	VulkanMaterial* material;
 };
 

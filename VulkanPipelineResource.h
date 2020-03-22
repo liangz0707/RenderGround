@@ -13,15 +13,6 @@ class VulkanPipelineResource
 public:
 	VulkanPipelineResource();
 
-	void createObjectDescriptorPool();
-	void destroyObjectDescriptorPool();
-	void createObjectDescriptorSetLayout();
-	void destroyObjectDescriptorSetLayout();
-	VkDescriptorSet createObjectDescriptorSet(
-		VkBuffer preEntityUniformBuffer,
-		VkSampler vkTextureSampler,
-		VkImageView vkTextureImageView);
-
 	void createTextureSampler();
 	void destroyTextureSampler();
 	void createCommandBuffers();
@@ -64,16 +55,38 @@ public:
 	{
 		return uniformBuffers;
 	}
-
+	 
 
 	VkSampler GetTextureSampler()
 	{
 		return textureSampler;
 	}
 
-	VkDescriptorSetLayout GetObjectSetLayout()
-	{
-		return objectDescriptorSetLayout;
+	void createUniformDescriptorSetLayout();
+	void destroyUniformDescriptorSetLayout();
+	VkDescriptorSetLayout GetUniformDescriptorSetLayout() {
+		 return uniformDescriptorSetLayout;
+	}
+
+	void createUniformDescriptorPool();
+	void destroyUniformDescriptorPool();
+
+	void createUniformDescriptorSets(
+		std::vector<VkBuffer> uniformBuffers,
+		std::vector<VkDescriptorSet>& uniformDescriptorSets);
+
+	VkDescriptorSet createObjectDescriptorSet(
+		VkBuffer preEntityUniformBuffer,
+		VkSampler vkTextureSampler,
+		VkImageView vkTextureImageView);
+
+	void createObjectDescriptorPool();
+	void destroyObjectDescriptorPool();
+
+	void createObjectDescriptorSetLayout();
+	void destroyObjectDescriptorSetLayout();
+	VkDescriptorSetLayout GetObjectDescriptorSetLayout() {
+		return entityUniformDescriptorSetLayout;
 	}
 
 private:
@@ -83,7 +96,9 @@ private:
 
 	std::vector<VkCommandBuffer> commandBuffers;
 
-	VkDescriptorPool objectDescriptorPool;
-	VkDescriptorSetLayout objectDescriptorSetLayout;
+	VkDescriptorPool uniformDescriptorPool;
+	VkDescriptorPool entityUniformDescriptorPool;
+	VkDescriptorSetLayout uniformDescriptorSetLayout;
+	VkDescriptorSetLayout entityUniformDescriptorSetLayout;
 };
 

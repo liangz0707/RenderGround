@@ -64,7 +64,7 @@ void VulkanTestRendering::Render(VkCommandBuffer commandBuffer,
 		vkCmdBindIndexBuffer(commandBuffer, staticModel->GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 		// TODO:需要从模型当中取出来。
-		VkDescriptorSet descriptorSet[] = { unformDescriptorSet,  staticModel->GetDescriptorSet() };
+		VkDescriptorSet descriptorSet[] = { unformDescriptorSet,  staticModel->GetMaterial()->GetDescriptorSet() };
 		int descriptorSetNumber = 2;
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPass->GetPipelineLayout(), 0, descriptorSetNumber, descriptorSet, 0, nullptr);
 		

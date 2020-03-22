@@ -16,108 +16,6 @@ VkPipelineLayout VulkanRenderPass::GetPipelineLayout()
 	return vulkanGraphicPipeline->GetPipelineLayout();
 }
 
-void VulkanRenderPass::createUniformDescriptorSets(
-	std::vector<VkBuffer> uniformBuffers) {
-	
-	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t layoutsSize = RM->GetSwapChain()->GetSwapChainImageSize();
-	VkDevice vkDevice = RM->GetDevice()->GetInstance();
-
-	std::vector<VkDescriptorSetLayout> layouts(layoutsSize, uniformDescriptorSetLayout);
-	VkDescriptorSetAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = uniformDescriptorPool;
-	allocInfo.descriptorSetCount = static_cast<uint32_t>(layoutsSize);
-	allocInfo.pSetLayouts = layouts.data();
-
-	uniformDescriptorSets.resize(layoutsSize);
-	if (vkAllocateDescriptorSets(vkDevice, &allocInfo, uniformDescriptorSets.data()) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate descriptor sets!");
-	}
-
-	for (size_t i = 0; i < layoutsSize; i++) {
-		VkDescriptorBufferInfo bufferInfo = {};
-		bufferInfo.buffer = uniformBuffers[i];
-		bufferInfo.offset = 0;
-		bufferInfo.range = VK_WHOLE_SIZE;// sizeof(UniformBufferObject);
-		
-		std::array<VkWriteDescriptorSet, 1> descriptorWrites = {};
-
-		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[0].dstSet = uniformDescriptorSets[i];
-		descriptorWrites[0].dstBinding = 0;
-		descriptorWrites[0].dstArrayElement = 0;
-		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrites[0].descriptorCount = 1;
-		descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-		vkUpdateDescriptorSets(vkDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-	}
-}
-
-
-void VulkanRenderPass::createUniformDescriptorPool() {
-
-	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t layoutsSize = RM->GetSwapChain()->GetSwapChainImageSize();
-	VkDevice vkDevice = RM->GetDevice()->GetInstance();
-
-	std::array<VkDescriptorPoolSize, 1> poolSizes = {};
-
-	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(layoutsSize);
-
-	VkDescriptorPoolCreateInfo poolInfo = {};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32_t>(layoutsSize);
-
-	if (vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &uniformDescriptorPool) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor pool!");
-	}
-}
-void VulkanRenderPass::destroyUniformDescriptorPool() {
-
-	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	VkDevice vkDevice = RM->GetDevice()->GetInstance();
-	vkDestroyDescriptorPool(vkDevice, uniformDescriptorPool, nullptr);
-}
-
-void VulkanRenderPass::createUniformDescriptorSetLayout() {
-	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	VkDevice vkDevice = RM->GetDevice()->GetInstance();
-
-	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-	uboLayoutBinding.binding = 0;
-	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	uboLayoutBinding.descriptorCount = 1;
-	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
-
-
-	std::array<VkDescriptorSetLayoutBinding, 1> bindings = { uboLayoutBinding};
-
-	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-	layoutInfo.pBindings = bindings.data();
-
-	if (vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &uniformDescriptorSetLayout) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor set layout!");
-	}
-}
-
-void VulkanRenderPass::destroyUniformDescriptorSetLayout() {
-	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	VkDevice vkDevice = RM->GetDevice()->GetInstance();
-
-
-	vkDestroyDescriptorSetLayout(vkDevice, uniformDescriptorSetLayout, nullptr);
-	
-}
-
-
 void VulkanRenderPass::createRenderPass() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
@@ -222,12 +120,13 @@ void VulkanRenderPass::destroyRenderPass() {
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 	vkDestroyRenderPass(vkDevice, renderPass, nullptr);
 }
+
 void VulkanRenderPass::createGraphicPipelines(VulkanPipelineResource *vulkanPipelineResource)
 {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
-	vulkanGraphicPipeline = new VulkanGraphicPipeline();
+	vulkanGraphicPipeline = new VulkanGraphicPipeline(vulkanPipelineResource);
 
 	VkShaderModule vertShaderModule;
 	VkShaderModule fragShaderModule;
@@ -238,21 +137,26 @@ void VulkanRenderPass::createGraphicPipelines(VulkanPipelineResource *vulkanPipe
 	vertShaderModule = RM->createShaderModule(vertShaderCode);
 	fragShaderModule = RM->createShaderModule(fragShaderCode);
 
+	vulkanPipelineResource->createUniformDescriptorSets(
+		vulkanPipelineResource->GetUniformBuffers(), 
+		uniformDescriptorSets);
+
 	vulkanGraphicPipeline->createGraphicsPipeline(
-		vulkanPipelineResource,
 		vertShaderModule,
 		fragShaderModule,
 		RM->GetExtent(),
-		uniformDescriptorSetLayout,
 		renderPass);
 
 	vkDestroyShaderModule(RM->GetDevice()->GetInstance(), fragShaderModule, nullptr);
 	vkDestroyShaderModule(RM->GetDevice()->GetInstance(), vertShaderModule, nullptr);
-
 }
-
 
 void VulkanRenderPass::destroyGraphicPipelines()
 {
 	vulkanGraphicPipeline->destroyGraphicPipeline();
+}
+
+VkDescriptorSet VulkanRenderPass::GetUniformDescriptorSetByIndex(int i)
+{
+	return uniformDescriptorSets[i];
 }

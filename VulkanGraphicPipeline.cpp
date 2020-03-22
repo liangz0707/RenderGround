@@ -1,16 +1,13 @@
 #include "VulkanGraphicPipeline.h"
-VulkanGraphicPipeline::VulkanGraphicPipeline()
+VulkanGraphicPipeline::VulkanGraphicPipeline(VulkanPipelineResource* pipelineResource)
 {
+	this->pipelineResource = pipelineResource;
 }
 
-
-
 void VulkanGraphicPipeline::createGraphicsPipeline(
-	VulkanPipelineResource* vulkanPipelineResource,
 	VkShaderModule vertShaderModule, 
 	VkShaderModule fragShaderModule,
 	VkExtent2D swapChainExtent,
-	VkDescriptorSetLayout descriptorSetLayout,
 	VkRenderPass renderPass)
 {
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
@@ -127,8 +124,10 @@ void VulkanGraphicPipeline::createGraphicsPipeline(
 
 	int layoutCount = 2;
 	VkDescriptorSetLayout setLayout[] = { 
-		descriptorSetLayout,
-	vulkanPipelineResource->GetObjectSetLayout()};
+		pipelineResource->GetUniformDescriptorSetLayout(),
+		pipelineResource->GetObjectDescriptorSetLayout()
+	};
+	
 	// 动态的设置uniform Value需要设置PipelineLayout
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

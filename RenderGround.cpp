@@ -28,24 +28,25 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 	vulkanPipelineResource = new VulkanPipelineResource();
 	vulkanPipelineResource->createTextureSampler();
 	vulkanPipelineResource->createUniformBuffers(sizeof(UniformBufferObject));
-	vulkanPipelineResource->createObjectDescriptorSetLayout();
+	vulkanPipelineResource->createUniformDescriptorPool();
 	vulkanPipelineResource->createObjectDescriptorPool();
+	vulkanPipelineResource->createUniformDescriptorSetLayout();
+	vulkanPipelineResource->createObjectDescriptorSetLayout();
 
 	vulkanRenderPass = new VulkanRenderPass();
 	vulkanRenderPass->createRenderPass();
-	vulkanRenderPass->createUniformDescriptorSetLayout();
-	vulkanRenderPass->createUniformDescriptorPool();
-	vulkanRenderPass->createUniformDescriptorSets(
-		vulkanPipelineResource->GetUniformBuffers());
 	vulkanRenderPass->createGraphicPipelines(vulkanPipelineResource);
+
 
 	VulkanModel* vulkanModel = new VulkanModel();
 	VulkanTexture* vulkanTexture = new VulkanTexture();
 	vulkanSceneManager = new VulkanSceneManager();
 	vulkanSceneManager->SetPipelineResource(vulkanPipelineResource);
 	vulkanSceneManager->loadTexture(vulkanTexture);
-	vulkanSceneManager->loadRenderModel(vulkanModel);
-
+	VulkanRModel* model = vulkanSceneManager->loadRenderModel(vulkanModel);
+	VulkanMaterial * material = vulkanSceneManager->loadMaterial(vulkanRenderPass->GetGraphicPipeline());
+	model->SetMaterial(material);
+	
 	VulkanFramebuffer* vulkanFrameBuffer = new VulkanFramebuffer();
 	vulkanFrameBuffer->createDepthResource(vulkanSwapChain);
 	vulkanFrameBuffer->createSwapChainFrameBuffers(vulkanSwapChain, vulkanRenderPass);
@@ -131,8 +132,9 @@ void VulkanRenderGround::cleanupSwapChain() {
 	RM->GetSwapChain()->destroySwapChain();
 
 	vulkanPipelineResource->destroyUniformBuffers();
+	vulkanPipelineResource->destroyUniformDescriptorPool();
+	vulkanPipelineResource->destroyUniformDescriptorSetLayout();
 
-	vulkanRenderPass->destroyUniformDescriptorPool();
 }
 
 void VulkanRenderGround::cleanup()
@@ -142,11 +144,8 @@ void VulkanRenderGround::cleanup()
 
 	cleanupSwapChain();
 
-	vulkanRenderPass->destroyUniformDescriptorSetLayout();
-
-	vulkanPipelineResource->destroyObjectDescriptorPool();
-	vulkanPipelineResource->destroyObjectDescriptorSetLayout();
 	vulkanPipelineResource->destroyTextureSampler();
+
 
 	vulkanSceneManager->unloadTextures();
 	vulkanSceneManager->unloadModels();
@@ -172,12 +171,11 @@ void VulkanRenderGround::recreateSwapChain()
 	RM->GetSwapChain()->createSwapChainImageViews();
 
 	vulkanRenderPass->createRenderPass();
+
+	vulkanPipelineResource->createUniformDescriptorPool();
+	vulkanPipelineResource->createUniformDescriptorSetLayout();
 	vulkanPipelineResource->createUniformBuffers(sizeof(UniformBufferObject));
 
-	//vulkanRenderPass->createUniformDescriptorSetLayout();
-	vulkanRenderPass->createUniformDescriptorPool();
-	vulkanRenderPass->createUniformDescriptorSets(
-		vulkanPipelineResource->GetUniformBuffers());
 	vulkanRenderPass->createGraphicPipelines(vulkanPipelineResource);
 
 	RM->GetFramebuffer()->createDepthResource(RM->GetSwapChain());

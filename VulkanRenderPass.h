@@ -13,13 +13,6 @@ class VulkanPipelineResource;
 	
 class VulkanRenderPass
 {
-private:
-	VkRenderPass renderPass;
-	VkDescriptorPool uniformDescriptorPool;
-	std::vector<VkDescriptorSet> uniformDescriptorSets;
-	VkDescriptorSetLayout uniformDescriptorSetLayout;
-	VulkanGraphicPipeline* vulkanGraphicPipeline;
-
 public :
 	VulkanRenderPass();
 	VkRenderPass GetInstance();
@@ -28,17 +21,9 @@ public :
 	void destroyRenderPass();
 	void createGraphicPipelines(VulkanPipelineResource *vulkanPipelineResource);
 	void destroyGraphicPipelines();
-	void createUniformDescriptorSetLayout();
-	void destroyUniformDescriptorSetLayout();
-	void createUniformDescriptorPool();
-	void destroyUniformDescriptorPool();
 
-	void createUniformDescriptorSets(std::vector<VkBuffer> uniformBuffers);
 
-	VkDescriptorSet GetUniformDescriptorSetByIndex(int i)
-	{
-		return uniformDescriptorSets[i];
-	}
+	VkDescriptorSet GetUniformDescriptorSetByIndex(int i);
 
 	VulkanGraphicPipeline *GetGraphicPipeline()
 	{
@@ -46,5 +31,10 @@ public :
 	}
 
 	VkPipelineLayout GetPipelineLayout();
+
+private:
+	VkRenderPass renderPass;
+	VulkanGraphicPipeline* vulkanGraphicPipeline;
+	std::vector<VkDescriptorSet> uniformDescriptorSets;
 };
 

@@ -5,7 +5,52 @@ VulkanSceneManager::VulkanSceneManager()
 
 }
 
-void VulkanSceneManager::loadRenderModel(VulkanModel* vulkanModel)
+VulkanMaterial* VulkanSceneManager::loadMaterial(VulkanGraphicPipeline * pipeline)
+{
+	VkDeviceSize size = sizeof(PreEntityUniformBufferObject);
+	VulkanMaterial *material = new VulkanMaterial();
+	VkBuffer preEntityUniformBuffer;
+	VkDeviceMemory preEntityUniformBufferMemory;
+
+	vulkanPipelineResource->createPreUniformBuffer(
+		size,
+		preEntityUniformBuffer,
+		preEntityUniformBufferMemory
+		);
+
+	VkDescriptorSet vkDescriptorSet =
+		pipeline->GetPipelineResource()->createObjectDescriptorSet(
+			preEntityUniformBuffer,
+			vulkanPipelineResource->GetTextureSampler(),
+			GetTextureByIndex(0)->GetImageView()
+		);
+		
+	material->SetDescriptorSet(vkDescriptorSet);
+	material->SetDescriptorSetBuffer(preEntityUniformBuffer);
+	material->SetDescriptorSetBufferMemory(preEntityUniformBufferMemory);
+
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+
+	void* data;
+	RM->mapMemory(
+		material->GetDescriptorSetBufferMemory(),
+		sizeof(PreEntityUniformBufferObject),
+		&data);
+
+	memcpy(
+		data,
+		&preEntityUniformBufferMemory,
+		sizeof(PreEntityUniformBufferObject));
+
+	RM->unMapMemory(
+		preEntityUniformBufferMemory);
+
+
+	vulkanMaterials.push_back(material);
+	return material;
+}
+
+VulkanRModel* VulkanSceneManager::loadRenderModel(VulkanModel* vulkanModel)
 {
 	VulkanRModel* vulkanRModel = new VulkanRModel();
 
@@ -14,22 +59,6 @@ void VulkanSceneManager::loadRenderModel(VulkanModel* vulkanModel)
 
 	VkBuffer vkVertexBuffer;
 	VkDeviceMemory vkVertexDeviceMemory;
-
-	VkBuffer preEntityUniformBuffer;
-	VkDeviceMemory preEntityUniformBufferMemory;
-
-	vulkanPipelineResource->createPreUniformBuffer(
-		sizeof(PreEntityUniformBufferObject),
-		preEntityUniformBuffer,
-		preEntityUniformBufferMemory
-	);
-
-	VkDescriptorSet vkDescriptorSet = 
-		vulkanPipelineResource->createObjectDescriptorSet(
-				preEntityUniformBuffer,
-				vulkanPipelineResource->GetTextureSampler(),
-				GetTextureByIndex(0)->GetImageView()
-			);
 
 	vulkanPipelineResource->createIndexBuffer(
 		sizeof(vulkanModel->GetIndex()[0])* vulkanModel->GetIndex().size(),
@@ -41,34 +70,14 @@ void VulkanSceneManager::loadRenderModel(VulkanModel* vulkanModel)
 		vulkanModel->GetVertex().data(),
 		vkVertexBuffer, vkVertexDeviceMemory);
 
-	vulkanRModel->SetDescriptorSet(vkDescriptorSet);
-	vulkanRModel->SetDescriptorSetBuffer(preEntityUniformBuffer);
-	vulkanRModel->SetDescriptorSetBufferMemory(preEntityUniformBufferMemory);
+	vulkanRModel->SetIndexSize(vulkanModel->GetIndex().size());
 	vulkanRModel->SetVertexBuffer(vkVertexBuffer);
 	vulkanRModel->SetIndexBuffer(vkIndexBuffer);
 	vulkanRModel->SetVertexBufferMemory(vkVertexDeviceMemory);
 	vulkanRModel->SetIndexBufferMemory(vkIndexDeviceMemory);
-	vulkanRModel->SetIndexSize(vulkanModel->GetIndex().size());
-
-
-	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-
-	void* data;
-	RM->mapMemory(
-		vulkanRModel->GetDescriptorSetBufferMemory(),
-		sizeof(PreEntityUniformBufferObject),
-		&data);
-
-	memcpy(
-		data,
-		&(vulkanRModel->GetUniformBuffer()),
-		sizeof(PreEntityUniformBufferObject));
-
-	RM->unMapMemory(
-		vulkanRModel->GetDescriptorSetBufferMemory());
 
 	vulkanModels.push_back(vulkanRModel);
-
+	return vulkanRModel;
 }
 
 void VulkanSceneManager::unloadRenderModel(VulkanModel* vulkanModel)
@@ -121,8 +130,6 @@ void VulkanSceneManager::unloadModels()
 	{
 		RM->destroyBuffer(model->GetIndexBuffer());
 		RM->destroyBuffer(model->GetVertexBuffer());
-		RM->destroyBuffer(model->GetDescriptorSetBuffer());
-		RM->freeMemory(model->GetDescriptorSetBufferMemory());
 		RM->freeMemory(model->GetIndexBufferMemory());
 		RM->freeMemory(model->GetVertexBufferMemory());
 	}
@@ -140,9 +147,7 @@ void VulkanSceneManager::unloadTextures()
 		vkFreeMemory(vkDevice, texture->GetTextureImageMemory(), nullptr);
 	}
 	vulkanTextures.clear();
-
 }
-
 
 void VulkanSceneManager::updateModel()
 {
@@ -150,6 +155,12 @@ void VulkanSceneManager::updateModel()
 	{
 		model->Update();
 	}
+}
 
-	
+void VulkanSceneManager::updateMaterial()
+{
+	for (auto material : vulkanMaterials)
+	{
+		//material->Update();
+	}
 }

@@ -5,25 +5,23 @@
 #include "VulkanSwapChain.h"
 #include "VulkanRenderPass.h"
 #include "VulkanModel.h"
-
 #include "VulkanPipelineResource.h"
 
 class VulkanPipelineResource;
+
 class VulkanGraphicPipeline
 {
 
 public:
-	VulkanGraphicPipeline();
+	VulkanGraphicPipeline(VulkanPipelineResource* pipelineResource);
 
 	void createGraphicsPipeline(
-		VulkanPipelineResource *vulkanPipelineResource,
 		VkShaderModule vertShaderModule,
 		VkShaderModule fragShaderModule,
 		VkExtent2D swapChainExtent,
-		VkDescriptorSetLayout descriptorSetLayout,
 		VkRenderPass renderPass);
-
 	void destroyGraphicPipeline();
+
 
 	VkPipeline GetInstance()
 	{
@@ -34,11 +32,16 @@ public:
 	{
 		return vkPipelineLayout;
 	}
-	
 
+	VulkanPipelineResource* GetPipelineResource()
+	{
+		return pipelineResource;
+	}
+	
 private:
 	VkPipeline graphicsPipeline;
 	VkPipelineLayout vkPipelineLayout;
+	VulkanPipelineResource* pipelineResource;
 };
 
 

@@ -5,7 +5,9 @@
 #include "VulkanPipelineResource.h"
 #include "VulkanRTexture.h"
 #include "VulkanTexture.h"
+#include "VulkanMaterial.h"
 
+class VulkanMaterial;
 class VulkanModel;
 class VulkanTexture;
 class VulkanRModel;
@@ -18,9 +20,11 @@ class VulkanSceneManager
 
 public:
 	VulkanSceneManager();
+	VulkanMaterial* loadMaterial(VulkanGraphicPipeline* pipeline);
 	void updateModel();
+	void updateMaterial();
 
-	void loadRenderModel(VulkanModel* vulkanModel);
+	VulkanRModel* loadRenderModel(VulkanModel* vulkanModel);
 	void unloadRenderModel(VulkanModel* vulkanModel);
 	void loadTexture(VulkanTexture* vulkanTexture);
 	void unloadTexture(VulkanTexture* vulkanTexture);
@@ -50,6 +54,8 @@ public:
 private:
 	std::vector<VulkanRModel*> vulkanModels;
 	std::vector<VulkanRTexture*> vulkanTextures;
+	std::vector<VulkanMaterial*> vulkanMaterials;
+	
 	VulkanPipelineResource* vulkanPipelineResource;
 
 };
