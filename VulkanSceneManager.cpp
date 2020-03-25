@@ -45,7 +45,6 @@ VulkanMaterial* VulkanSceneManager::loadMaterial(VulkanGraphicPipeline * pipelin
 	RM->unMapMemory(
 		preEntityUniformBufferMemory);
 
-
 	vulkanMaterials.push_back(material);
 	return material;
 }

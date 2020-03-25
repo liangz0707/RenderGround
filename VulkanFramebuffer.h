@@ -10,9 +10,19 @@ class VulkanRenderPass;
 class VulkanFramebuffer
 {
 public:
-	void createDepthResource(VulkanSwapChain* vulkanSwapChain);
+	void createDepthResource();
 	void destroyDepthResource();
-	void createSwapChainFrameBuffers(VulkanSwapChain * vulkanSwapChain, VulkanRenderPass* vulkanRenderPass);
+
+	void createDeferredColorBufferResource();
+	void destroyDeferredColorBufferResource();
+
+	void createForwardColorBufferResource();
+	void destroyForwardColorBufferResource();
+
+	void createSwapChainFrameBuffers(VulkanRenderPass* vulkanRenderPass);
+	void createDeferredFrameBuffer(VulkanRenderPass* vulkanRenderPass);
+	void createForwardFrameBuffer(VulkanRenderPass* vulkanRenderPass);
+
 	void destroySwapChainFrameBuffers();
 
 	size_t GetFrameBufferSize()
@@ -27,13 +37,42 @@ public:
 
 
 private:
-	VkFramebuffer createFrameBuffer(std::array<VkImageView, 2> attachments,
+	VkFramebuffer createFrameBuffer(std::vector<VkImageView> attachments,
 		VkExtent2D swapChainExtent, VulkanRenderPass* vulkanRenderPass);
+
 	std::vector<VkFramebuffer> vVulkanFrameBuffer;
+	VkFramebuffer deferredFrameBuffer;
+	VkFramebuffer forwardFrameBuffer;
 	VulkanDevice* vulkanDevice;
 
-	VkImage depthImage;
+	VkImage gbufferAImage;
+	VkImage gbufferBImage;
+	VkImage gbufferCImage;
+	VkImage gbufferDImage;
+	VkImage gbufferEImage;
 
+	VkImageView gbufferAImageView;
+	VkImageView gbufferBImageView;
+	VkImageView gbufferCImageView;
+	VkImageView gbufferDImageView;
+	VkImageView gbufferEImageView;
+
+	VkDeviceMemory gbufferAImageMemory;
+	VkDeviceMemory gbufferBImageMemory;
+	VkDeviceMemory gbufferCImageMemory;
+	VkDeviceMemory gbufferDImageMemory;
+	VkDeviceMemory gbufferEImageMemory;
+
+	VkImage colorBufferImage;
+	VkImage vectorBufferImage;
+
+	VkImageView colorBufferImageView;
+	VkImageView vectorBufferImageView;
+
+	VkDeviceMemory colorBufferImageMemory;
+	VkDeviceMemory vectorBufferImageMemory;
+
+	VkImage depthImage;
 	VkImageView depthImageView;
 	VkDeviceMemory depthImageMemory;
 

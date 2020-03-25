@@ -34,8 +34,8 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 	vulkanPipelineResource->createObjectDescriptorSetLayout();
 
 	vulkanRenderPass = new VulkanRenderPass();
-	vulkanRenderPass->createRenderPass();
-	vulkanRenderPass->createGraphicPipelines(vulkanPipelineResource);
+	vulkanRenderPass->createDefaultRenderPass();
+	vulkanRenderPass->createToScreenPipelines(vulkanPipelineResource);
 
 
 	VulkanModel* vulkanModel = new VulkanModel();
@@ -48,8 +48,8 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 	model->SetMaterial(material);
 	
 	VulkanFramebuffer* vulkanFrameBuffer = new VulkanFramebuffer();
-	vulkanFrameBuffer->createDepthResource(vulkanSwapChain);
-	vulkanFrameBuffer->createSwapChainFrameBuffers(vulkanSwapChain, vulkanRenderPass);
+	vulkanFrameBuffer->createDepthResource();
+	vulkanFrameBuffer->createSwapChainFrameBuffers( vulkanRenderPass);
 	RM->SetFramebuffer(vulkanFrameBuffer);
 
 	size_t commandBufferSize = RM->GetFramebuffer()->GetFrameBufferSize();
@@ -125,8 +125,8 @@ void VulkanRenderGround::cleanupSwapChain() {
 
 	vulkanCommandBuffer->destroyCommandBuffer();
 
-	vulkanRenderPass->destroyGraphicPipelines();
-	vulkanRenderPass->destroyRenderPass();
+	vulkanRenderPass->destroyToScreenPipelines();
+	vulkanRenderPass->destroyDefaultRenderPass();
 
 	RM->GetSwapChain()->destroySwapChainImageViews();
 	RM->GetSwapChain()->destroySwapChain();
@@ -170,16 +170,16 @@ void VulkanRenderGround::recreateSwapChain()
 	RM->GetSwapChain()->createSwapChain();
 	RM->GetSwapChain()->createSwapChainImageViews();
 
-	vulkanRenderPass->createRenderPass();
+	vulkanRenderPass->createDefaultRenderPass();
 
 	vulkanPipelineResource->createUniformDescriptorPool();
 	vulkanPipelineResource->createUniformDescriptorSetLayout();
 	vulkanPipelineResource->createUniformBuffers(sizeof(UniformBufferObject));
 
-	vulkanRenderPass->createGraphicPipelines(vulkanPipelineResource);
+	vulkanRenderPass->createToScreenPipelines(vulkanPipelineResource);
 
-	RM->GetFramebuffer()->createDepthResource(RM->GetSwapChain());
-	RM->GetFramebuffer()->createSwapChainFrameBuffers(RM->GetSwapChain(), vulkanRenderPass);
+	RM->GetFramebuffer()->createDepthResource();
+	RM->GetFramebuffer()->createSwapChainFrameBuffers(vulkanRenderPass);
 
 	size_t commandBufferSize = RM->GetFramebuffer()->GetFrameBufferSize();
 	vulkanCommandBuffer->createCommandBuffer(RM->GetCommandPool(), commandBufferSize);

@@ -42,7 +42,6 @@ public:
 		return vkDescriptorSetBuffer;
 	}
 
-
 private:
 	VkBuffer vkDescriptorSetBuffer;
 	VkDeviceMemory vkDescriptorSetBufferMemory;

@@ -17,11 +17,26 @@ public :
 	VulkanRenderPass();
 	VkRenderPass GetInstance();
 	
-	void createRenderPass();
-	void destroyRenderPass();
-	void createGraphicPipelines(VulkanPipelineResource *vulkanPipelineResource);
-	void destroyGraphicPipelines();
+	void createDefaultRenderPass();
+	void destroyDefaultRenderPass();
 
+	void createDeferredRenderPass();
+	void destroyDeferredRenderPass();
+
+	void createForwardRenderPass();
+	void destroyForwardRenderPass();
+
+	void createToScreenPipelines(VulkanPipelineResource *vulkanPipelineResource);
+	void destroyToScreenPipelines();
+
+	void createDeferredGeometryPipelines(VulkanPipelineResource* vulkanPipelineResource);
+	void destroyDeferredGeometryPipelines();
+
+	void createDeferredLightingPipelines(VulkanPipelineResource* vulkanPipelineResource);
+	void destroyDeferredLightingPipelines();
+
+	void createForwardPipelines(VulkanPipelineResource* vulkanPipelineResource);
+	void destroyForwardPipelines();
 
 	VkDescriptorSet GetUniformDescriptorSetByIndex(int i);
 

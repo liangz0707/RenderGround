@@ -6,7 +6,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-void Utility::loadModel(std::string ModelPath,
+void Utility::loadModel(
+	std::string ModelPath,
 	std::vector<Vertex>& vertices,
 	std::vector<uint32_t>& indices) {
 
@@ -49,7 +50,8 @@ void Utility::loadModel(std::string ModelPath,
 	}
 }
 
-unsigned char* Utility::loadImage(std::string ImagePath, 
+unsigned char* Utility::loadImage(
+	std::string ImagePath, 
 	int &texWidth, 
 	int & texHeight,
 	int & texChannels
