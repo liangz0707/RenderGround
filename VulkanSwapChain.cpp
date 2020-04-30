@@ -83,7 +83,7 @@ void  VulkanSwapChain::createSwapChain() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
-	SwapChainSupportDetails swapChainSupport = Utility::querySwapChainSupport(RM->GetApplication()->GetVkPhysicalDevice(), RM->GetApplication()->GetVkSurfaceKHR());
+	SwapChainSupportDetails swapChainSupport = RUtility::querySwapChainSupport(RM->GetApplication()->GetVkPhysicalDevice(), RM->GetApplication()->GetVkSurfaceKHR());
 
 	//sRGB and R8G8B8  ColorSpace is Used to HDR
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -197,11 +197,11 @@ bool VulkanSwapChain::isDeviceSuitable(VkPhysicalDevice device) {
 	// ¼ì²éQueueFamily
 	QueueFamilyIndices indices = RM->GetApplication()->findQueueFamilies(RM->GetApplication()->GetVkPhysicalDevice());
 
-	bool extensionsSupported = Utility::checkDeviceExtensionSupport(device);
+	bool extensionsSupported = RUtility::checkDeviceExtensionSupport(device);
 
 	bool swapChainAdequate = false;
 	if (extensionsSupported) {
-		SwapChainSupportDetails swapChainSupport =Utility:: querySwapChainSupport(device, RM->GetApplication()->GetVkSurfaceKHR());
+		SwapChainSupportDetails swapChainSupport =RUtility:: querySwapChainSupport(device, RM->GetApplication()->GetVkSurfaceKHR());
 		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 	}
 

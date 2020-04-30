@@ -8,12 +8,12 @@
 #include "VulkanRenderPass.h"
 #include "VulkanSceneManager.h"
 class VulkanSceneManager;
-class VulkanTestRendering
+class VulkanDeferredRendering
 {
 public:
-	VulkanTestRendering();
-	void Render(VkCommandBuffer commandBuffer, VkFramebuffer frameBuffer, VkExtent2D extent,int index);
-	void Config(VulkanFrameRenderCommandBuffer* vulkanCommandBuffer);
+	VulkanDeferredRendering();
+	virtual void Render(VkCommandBuffer commandBuffer, VkFramebuffer frameBuffer, VkExtent2D extent, int index);
+	virtual void Config(VulkanFrameRenderCommandBuffer* vulkanCommandBuffer);
 
 };
 

@@ -10,6 +10,8 @@
 class VulkanFrameRenderCommandBuffer;
 class VulkanSwapChain;
 class VulkanFramebuffer;
+class VulkanApplication;
+class VulkanDevice;
 
 class VulkanResourceManager
 {
@@ -20,9 +22,9 @@ public:
 		return vulkanResourceManager;
 	}
 
-	static void SetResourceManager(VulkanDevice* vulkanDevice, VulkanApplication* vulkanInstance) {
+	static void SetResourceManager(VulkanDevice* svulkanDevice, VulkanApplication* svulkanInstance) {
 		if (vulkanResourceManager == nullptr)
-			vulkanResourceManager = new VulkanResourceManager(vulkanDevice, vulkanInstance);
+			vulkanResourceManager = new VulkanResourceManager(svulkanDevice, svulkanInstance);
 	}
 	VkFramebuffer createFramebuffer(VkFramebufferCreateInfo* framebufferInfo);
 
@@ -74,7 +76,7 @@ public:
 	VkSemaphore CreateSemaphore(VkSemaphoreCreateInfo* vkSemaphoreCreateInfo);
 	VkFence CreateFence(VkFenceCreateInfo* vkFenceCreateInfo);
 
-	VulkanDevice * GetDevice()
+	VulkanDevice* GetDevice()
 	{
 		return vulkanDevice;
 	}

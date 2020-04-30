@@ -8,48 +8,17 @@
 class VulkanFramebuffer;
 
 class VulkanSwapChain;
-class VulkanGraphicPipeline;
-class VulkanPipelineResource;
+class IVulkanGraphicPipeline;
 	
-class VulkanRenderPass
+class IVulkanRenderPass
 {
 public :
-	VulkanRenderPass();
-	VkRenderPass GetInstance();
-	
-	void createDefaultRenderPass();
-	void destroyDefaultRenderPass();
+	IVulkanRenderPass();
+	virtual VkRenderPass GetInstance();
+	virtual void createRenderPass();
+	virtual void destroyRenderPass();
 
-	void createDeferredRenderPass();
-	void destroyDeferredRenderPass();
-
-	void createForwardRenderPass();
-	void destroyForwardRenderPass();
-
-	void createToScreenPipelines(VulkanPipelineResource *vulkanPipelineResource);
-	void destroyToScreenPipelines();
-
-	void createDeferredGeometryPipelines(VulkanPipelineResource* vulkanPipelineResource);
-	void destroyDeferredGeometryPipelines();
-
-	void createDeferredLightingPipelines(VulkanPipelineResource* vulkanPipelineResource);
-	void destroyDeferredLightingPipelines();
-
-	void createForwardPipelines(VulkanPipelineResource* vulkanPipelineResource);
-	void destroyForwardPipelines();
-
-	VkDescriptorSet GetUniformDescriptorSetByIndex(int i);
-
-	VulkanGraphicPipeline *GetGraphicPipeline()
-	{
-		return vulkanGraphicPipeline;
-	}
-
-	VkPipelineLayout GetPipelineLayout();
-
-private:
+protected:
 	VkRenderPass renderPass;
-	VulkanGraphicPipeline* vulkanGraphicPipeline;
-	std::vector<VkDescriptorSet> uniformDescriptorSets;
 };
 

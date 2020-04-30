@@ -1,8 +1,11 @@
 #pragma once
 #include "Common.h"
+#include "VulkanCommandBuffer.h"
+#include "VulkanResourceManager.h"
+#include "VulkanSceneManager.h"
 
 
-class Utility
+class RUtility
 {
 public :
 	static  bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
@@ -124,6 +127,12 @@ public :
 		VkBuffer& buffer,
 		VkDeviceMemory& bufferMemory);
 
+	static void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+	static void createTextureImage(unsigned char* pixels, int texWidth, int texHeight, int texChannel, VkImage& textureImage, VkDeviceMemory& textureImageMemory);
+
+	static void copyBufferToBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
 	static 	uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 		VkPhysicalDeviceMemoryProperties memProperties;
 		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
@@ -137,5 +146,10 @@ public :
 
 	}
 
+	static void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+
+	static bool hasStencilComponent(VkFormat format) {
+		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+	}
 
 };

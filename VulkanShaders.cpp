@@ -3,8 +3,9 @@
 
 VulkanShader::VulkanShader(VulkanDevice* vulkanDevice,std::string shaderFileName)
 {
-	auto shaderCode = Utility::readFile("vert.spv");
-	createShaderModule(vulkanDevice,shaderCode);
+	auto shaderCode = RUtility::readFile(shaderFileName);
+	shaderModule = createShaderModule(vulkanDevice,shaderCode);
+	fileName = shaderFileName;
 }
 
 VkShaderModule VulkanShader::GetShaderInstance()

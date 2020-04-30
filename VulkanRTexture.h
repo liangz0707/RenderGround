@@ -2,8 +2,6 @@
 #include "Common.h"
 #include "VulkanResourceManager.h"
 
-class VulkanResourceManager;
-
 class VulkanRTexture
 {
 

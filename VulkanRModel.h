@@ -67,11 +67,21 @@ public:
 
 	void SetMaterial(VulkanMaterial* material);
 
+	void createVertexBuffer(VkDeviceSize bufferSize,
+		void* srcData,
+		VkBuffer& vertexBuffer,
+		VkDeviceMemory& vertexBufferMemory);
+
+	void createIndexBuffer(VkDeviceSize bufferSize,
+		void* srcData,
+		VkBuffer& vertexBuffer,
+		VkDeviceMemory& vertexBufferMemory);
+
 	void Update();
 private:
 	//glm::vec4 position;
 	size_t indexSize;
-	UniformBufferObject ubo;
+	PreEntityUniformBufferObject ubo;
 
 	VkBuffer vertexBuffer;
 	VkBuffer indexBuffer;

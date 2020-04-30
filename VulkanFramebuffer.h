@@ -5,7 +5,8 @@
 #include "VulkanResourceManager.h"
 
 class VulkanSwapChain;
-class VulkanRenderPass;
+class IVulkanRenderPass;
+class VulkanDevice;
 
 class VulkanFramebuffer
 {
@@ -19,9 +20,9 @@ public:
 	void createForwardColorBufferResource();
 	void destroyForwardColorBufferResource();
 
-	void createSwapChainFrameBuffers(VulkanRenderPass* vulkanRenderPass);
-	void createDeferredFrameBuffer(VulkanRenderPass* vulkanRenderPass);
-	void createForwardFrameBuffer(VulkanRenderPass* vulkanRenderPass);
+	void createSwapChainFrameBuffers(IVulkanRenderPass* vulkanRenderPass);
+	void createDeferredFrameBuffer(IVulkanRenderPass* vulkanRenderPass);
+	void createForwardFrameBuffer(IVulkanRenderPass* vulkanRenderPass);
 
 	void destroySwapChainFrameBuffers();
 
@@ -38,7 +39,7 @@ public:
 
 private:
 	VkFramebuffer createFrameBuffer(std::vector<VkImageView> attachments,
-		VkExtent2D swapChainExtent, VulkanRenderPass* vulkanRenderPass);
+		VkExtent2D swapChainExtent, IVulkanRenderPass* vulkanRenderPass);
 
 	std::vector<VkFramebuffer> vVulkanFrameBuffer;
 	VkFramebuffer deferredFrameBuffer;

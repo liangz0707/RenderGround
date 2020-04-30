@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "VulkanGraphicPipeline.h"
 
-class VulkanGraphicPipeline;
+class IVulkanGraphicPipeline;
 
 class VulkanMaterial
 {
@@ -10,12 +10,23 @@ public:
 
 	VulkanMaterial();
 
-	void Update(UniformBufferObject ubo);
+	void Update(PreEntityUniformBufferObject ubo);
 
 	void SetDescriptorSet(VkDescriptorSet vkDescriptorSet)
 	{
 		this->vkDescriptorSet = vkDescriptorSet;
 	}
+	VkDescriptorSet CreateObjectDescriptorSet(
+		VkBuffer preEntityUniformBuffer,
+		VkSampler vkTextureSampler,
+		VkImageView vkTextureImageView,
+		VkDescriptorSetLayout layouts,
+		VkDescriptorPool pool);
+
+	void CreatePreUniformBuffer(
+		VkDeviceSize bufferSize,
+		VkBuffer& preObjectBuffer,
+		VkDeviceMemory& vertexBufferMemory);
 
 	VkDescriptorSet GetDescriptorSet()
 	{

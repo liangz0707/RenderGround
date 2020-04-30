@@ -172,11 +172,11 @@ bool VulkanApplication::isDeviceSuitable(VkPhysicalDevice device) {
 	// ºÏ≤ÈQueueFamily
 	QueueFamilyIndices indices = findQueueFamilies(device);
 
-	bool extensionsSupported =Utility::checkDeviceExtensionSupport(device);
+	bool extensionsSupported =RUtility::checkDeviceExtensionSupport(device);
 
 	bool swapChainAdequate = false;
 	if (extensionsSupported) {
-		SwapChainSupportDetails swapChainSupport = Utility::querySwapChainSupport(device,surface);
+		SwapChainSupportDetails swapChainSupport = RUtility::querySwapChainSupport(device,surface);
 		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 	}
 

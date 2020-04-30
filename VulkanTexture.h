@@ -1,6 +1,8 @@
 #pragma once
-#include "Common.h"
 #include "Utility.h"
+#include "Common.h"
+
+class RUtility;
 class VulkanTexture
 {
 private :
@@ -18,13 +20,10 @@ public:
 	int GetChannel() { return texChannels; };
 	unsigned char* GetData() { return pixel; };
 
-	static unsigned char* loadImage(std::string ImagePath,
+	unsigned char* loadImage(std::string ImagePath,
 		int& texWidth,
 		int& texHeight,
-		int& texChannels)
-	{
-		return Utility::loadImage(ImagePath, texWidth, texHeight, texChannels);
-	}
+		int& texChannels);
 
 };
 

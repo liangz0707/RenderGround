@@ -33,6 +33,45 @@
 
 #include"Config.h"
 
+struct ScreenVertex {
+	glm::vec3 pos;
+	glm::vec2 texCoord;
+
+	bool operator==(const ScreenVertex& other) const {
+		return pos == other.pos && texCoord == other.texCoord;
+	}
+
+	// 顶点数据的整体属性，数据间隔和类型
+	static VkVertexInputBindingDescription getBindingDescription() {
+		VkVertexInputBindingDescription bindingDescription = {};
+		// 指定了绑定数组中这个绑定的索引
+		bindingDescription.binding = 0;
+		bindingDescription.stride = sizeof(ScreenVertex);
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		return bindingDescription;
+	}
+
+	// 逐个顶点数据的属性，内部数据的类型，返回整体的属性描述
+	static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
+		//The binding parameter tells Vulkan from which binding the per-vertex data comes. 
+		attributeDescriptions[0].binding = 0;
+		attributeDescriptions[0].location = 0;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[0].offset = offsetof(ScreenVertex, pos);
+
+		attributeDescriptions[1].binding = 0;
+		attributeDescriptions[1].location = 2;
+		attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[1].offset = offsetof(ScreenVertex, texCoord);
+
+		return attributeDescriptions;
+	}
+};
+
+
+
 struct Vertex {
 	glm::vec3 pos;
 	glm::vec3 color;

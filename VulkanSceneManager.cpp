@@ -1,28 +1,31 @@
 #include "VulkanSceneManager.h"
+#include "RenderingResourceLocater.h"
 
 VulkanSceneManager::VulkanSceneManager()
 {
 
 }
 
-VulkanMaterial* VulkanSceneManager::loadMaterial(VulkanGraphicPipeline * pipeline)
+VulkanMaterial* VulkanSceneManager::loadMaterial()
 {
 	VkDeviceSize size = sizeof(PreEntityUniformBufferObject);
 	VulkanMaterial *material = new VulkanMaterial();
 	VkBuffer preEntityUniformBuffer;
 	VkDeviceMemory preEntityUniformBufferMemory;
 
-	vulkanPipelineResource->createPreUniformBuffer(
+	material->CreatePreUniformBuffer(
 		size,
 		preEntityUniformBuffer,
 		preEntityUniformBufferMemory
 		);
 
 	VkDescriptorSet vkDescriptorSet =
-		pipeline->GetPipelineResource()->createObjectDescriptorSet(
+		material->CreateObjectDescriptorSet(
 			preEntityUniformBuffer,
-			vulkanPipelineResource->GetTextureSampler(),
-			GetTextureByIndex(0)->GetImageView()
+			RenderingResourceLocater::get_sampler()->GetInstance(),
+			GetTextureByIndex(0)->GetImageView(), 
+			RenderingResourceLocater::get_layout()->GetEntityDescriptorSetLayout(),
+			RenderingResourceLocater::get_layout()->GetEntityDescriptorPool()
 		);
 		
 	material->SetDescriptorSet(vkDescriptorSet);
@@ -59,12 +62,12 @@ VulkanRModel* VulkanSceneManager::loadRenderModel(VulkanModel* vulkanModel)
 	VkBuffer vkVertexBuffer;
 	VkDeviceMemory vkVertexDeviceMemory;
 
-	vulkanPipelineResource->createIndexBuffer(
+	vulkanRModel->createIndexBuffer(
 		sizeof(vulkanModel->GetIndex()[0])* vulkanModel->GetIndex().size(),
 		vulkanModel->GetIndex().data(),
 		vkIndexBuffer, vkIndexDeviceMemory);
 
-	vulkanPipelineResource->createVertexBuffer(
+	vulkanRModel->createVertexBuffer(
 		sizeof(vulkanModel->GetVertex()[0]) * vulkanModel->GetVertex().size(),
 		vulkanModel->GetVertex().data(),
 		vkVertexBuffer, vkVertexDeviceMemory);
@@ -93,7 +96,7 @@ void VulkanSceneManager::loadTexture(VulkanTexture* vulkanTexture)
 	VkDeviceMemory vkTextureImageDeviceMemory;
 	VulkanRTexture* vulkanRTexture;
 
-	vulkanPipelineResource->createTextureImage(
+	RUtility::createTextureImage(
 		vulkanTexture->GetData(),
 		vulkanTexture->GetWidth(),
 		vulkanTexture->GetHeight(),

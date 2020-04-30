@@ -2,7 +2,6 @@
 #include "Common.h"
 #include "VulkanModel.h"
 #include "VulkanRModel.h"
-#include "VulkanPipelineResource.h"
 #include "VulkanRTexture.h"
 #include "VulkanTexture.h"
 #include "VulkanMaterial.h"
@@ -12,7 +11,6 @@ class VulkanModel;
 class VulkanTexture;
 class VulkanRModel;
 class VulkanRTexture;
-class VulkanPipelineResource;
 
 
 class VulkanSceneManager
@@ -20,7 +18,7 @@ class VulkanSceneManager
 
 public:
 	VulkanSceneManager();
-	VulkanMaterial* loadMaterial(VulkanGraphicPipeline* pipeline);
+	VulkanMaterial* loadMaterial();
 	void updateModel();
 	void updateMaterial();
 
@@ -31,10 +29,6 @@ public:
 	void unloadModels();
 	void unloadTextures();
 
-	void SetPipelineResource(VulkanPipelineResource* vulkanPipelineResource)
-	{
-		this->vulkanPipelineResource = vulkanPipelineResource;
-	}
 
 	std::vector<VulkanRModel*> GetStaticModel()
 	{
@@ -55,8 +49,6 @@ private:
 	std::vector<VulkanRModel*> vulkanModels;
 	std::vector<VulkanRTexture*> vulkanTextures;
 	std::vector<VulkanMaterial*> vulkanMaterials;
-	
-	VulkanPipelineResource* vulkanPipelineResource;
 
 };
 

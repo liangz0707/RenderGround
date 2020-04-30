@@ -3,7 +3,6 @@
 #include "Utility.h"
 #include "VulkanSwapChain.h"
 #include "VulkanGraphicPipeline.h"
-#include "VulkanPipelineResource.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanResourceManager.h"
 #include "VulkanRenderPass.h"
@@ -14,15 +13,22 @@
 #include "VulkanSync.h"
 
 #include "InputController.h"
+#include "PipelineLayout.h"
+#include "DeferredRenderPass.h"
+#include "ForwardRenderPass.h"
 
 class VulkanSync;
 class VulkanTestRendering;
-class VulkanRenderPass;
+class IVulkanRenderPass;
 class VulkanFramebuffer;
 class VulkanSceneManager;
 class VulkanFrameRenderCommandBuffer;
 class VulkanSingleTimeCommandBuffer;
 
+class GlobalRenderData;
+class PipelineLayout;
+class VulkanSampler;
+class RenderingResourceLocater;
 
 class VulkanRenderGround
 {
@@ -38,11 +44,18 @@ public:
 
 public:
 	VulkanApplication* vulkanApplication;
-	VulkanRenderPass* vulkanRenderPass;
+
+	DeferredRenderPass* deferredPass;
+	ForwardRenderPass* forwardPass;
+
 	VulkanFrameRenderCommandBuffer* vulkanCommandBuffer;
 	VulkanSync* vulkanSync;
-	VulkanPipelineResource* vulkanPipelineResource;
 	VulkanSceneManager* vulkanSceneManager;
 	VulkanTestRendering* vulkanRendering;
+
+	// 
+	PipelineLayout *layout;
+	GlobalRenderData* globalData;
+	VulkanSampler* sampler;
 };
 

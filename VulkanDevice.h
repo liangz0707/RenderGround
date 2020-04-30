@@ -3,6 +3,8 @@
 
 #include "VulkanApplication.h"
 
+class VulkanApplication;
+
 class VulkanDevice
 {
 private:

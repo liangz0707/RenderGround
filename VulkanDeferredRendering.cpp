@@ -1,11 +1,11 @@
-#include "VulkanTestRendering.h"
+#include "VulkanDeferredRendering.h"
 #include "RenderingResourceLocater.h"
 
-VulkanTestRendering::VulkanTestRendering()
+VulkanDeferredRendering::VulkanDeferredRendering()
 {
 }
 
-void VulkanTestRendering::Config(VulkanFrameRenderCommandBuffer* vulkanCommandBuffer)
+void VulkanDeferredRendering::Config(VulkanFrameRenderCommandBuffer* vulkanCommandBuffer)
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
@@ -22,11 +22,11 @@ void VulkanTestRendering::Config(VulkanFrameRenderCommandBuffer* vulkanCommandBu
 }
 
 
-void VulkanTestRendering::Render(VkCommandBuffer commandBuffer,
+void VulkanDeferredRendering::Render(VkCommandBuffer commandBuffer,
 	VkFramebuffer frameBuffer,
 	VkExtent2D extend,
 	int i
-)
+	)
 {
 	// 这里才是真正的把renderPass和swapchaing中的Framebuffer联系起来
 	VkRenderPassBeginInfo renderPassInfo = {};
@@ -38,15 +38,9 @@ void VulkanTestRendering::Render(VkCommandBuffer commandBuffer,
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = extend;
 
-	std::array<VkClearValue, 8> clearValues = {};
+	std::array<VkClearValue, 2> clearValues = {};
 	clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-	clearValues[1].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-	clearValues[2].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-	clearValues[3].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-	clearValues[4].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-	clearValues[5].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-	clearValues[6].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-	clearValues[7].depthStencil = { 1.0f, 0 };
+	clearValues[1].depthStencil = { 1.0f, 0 };
 
 	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 	renderPassInfo.pClearValues = clearValues.data();
@@ -58,7 +52,7 @@ void VulkanTestRendering::Render(VkCommandBuffer commandBuffer,
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, RenderingResourceLocater::get_pipeline_deferred_geometry()->GetInstance());
 
 	std::vector<VulkanRModel*> vulkanModels = RenderingResourceLocater::get_scene_manager()->GetStaticModel();
-	for (VulkanRModel * staticModel : vulkanModels)
+	for (VulkanRModel* staticModel : vulkanModels)
 	{
 		VkBuffer vertexBuffers[] = { staticModel->GetVertexBuffer() };
 		VkDeviceSize offsets[] = { 0 };
@@ -68,25 +62,19 @@ void VulkanTestRendering::Render(VkCommandBuffer commandBuffer,
 
 		// TODO:需要从模型当中取出来。
 		VkDescriptorSet descriptorSet[] = {
-				RenderingResourceLocater::get_global_render_data()->getUniformDescriptorSet(i),
-				 staticModel->GetMaterial()->GetDescriptorSet() };
+				//vulkanRenderPass->GetGraphicPipeline()->GetPipelineResource()->GetUniformDescriptorSetByIndex(i),  
+				staticModel->GetMaterial()->GetDescriptorSet() };
 		int descriptorSetNumber = 2;
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, RenderingResourceLocater::get_layout()->GetInstance(), 0, descriptorSetNumber, descriptorSet, 0, nullptr);
-		
+
 		//vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 		vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(staticModel->GetIndexSize()), 1, 0, 0, 0);
 
 	}
-	vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, RenderingResourceLocater::get_pipeline_deferred_lighting()->GetInstance());
-	VkBuffer vertexBuffers[] = { vulkanModels[0]->GetVertexBuffer() };
-	VkDeviceSize offsets[] = { 0 };
 
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-	vkCmdBindIndexBuffer(commandBuffer, vulkanModels[0]->GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
-	vkCmdDraw(commandBuffer, static_cast<uint32_t>(4), 1, 0, 0);
 
 	vkCmdEndRenderPass(commandBuffer);
-	
+
 }

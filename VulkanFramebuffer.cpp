@@ -2,7 +2,7 @@
 
 VkFramebuffer VulkanFramebuffer::createFrameBuffer(std::vector<VkImageView> attachments,
 	VkExtent2D extent
-	, VulkanRenderPass* vulkanRenderPass) {
+	, IVulkanRenderPass* vulkanRenderPass) {
 	VkFramebuffer vkFramebuffer;
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	VkFramebufferCreateInfo createInfo = {};
@@ -17,7 +17,7 @@ VkFramebuffer VulkanFramebuffer::createFrameBuffer(std::vector<VkImageView> atta
 	return vkFramebuffer;
 }
 
-void VulkanFramebuffer::createSwapChainFrameBuffers(VulkanRenderPass* vulkanRenderPass) 
+void VulkanFramebuffer::createSwapChainFrameBuffers(IVulkanRenderPass* vulkanRenderPass) 
 {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
@@ -33,7 +33,7 @@ void VulkanFramebuffer::createSwapChainFrameBuffers(VulkanRenderPass* vulkanRend
 	}
 }
 
-void VulkanFramebuffer::createDeferredFrameBuffer(VulkanRenderPass* vulkanRenderPass)
+void VulkanFramebuffer::createDeferredFrameBuffer(IVulkanRenderPass* vulkanRenderPass)
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	vVulkanFrameBuffer.resize(RM->GetSwapChain()->GetSwapChainImageSize());
@@ -53,7 +53,7 @@ void VulkanFramebuffer::createDeferredFrameBuffer(VulkanRenderPass* vulkanRender
 	}
 }
 
-void VulkanFramebuffer::createForwardFrameBuffer(VulkanRenderPass* vulkanRenderPass)
+void VulkanFramebuffer::createForwardFrameBuffer(IVulkanRenderPass* vulkanRenderPass)
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	vVulkanFrameBuffer.resize(RM->GetSwapChain()->GetSwapChainImageSize());
@@ -86,7 +86,7 @@ void VulkanFramebuffer::createDepthResource()
 		RM->GetExtent().height,
 		RM->findDepthFormat(),
 		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT| VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		depthImage,
 		depthImageMemory
@@ -114,7 +114,7 @@ void VulkanFramebuffer::createDeferredColorBufferResource()
 		RM->GetExtent().height,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		gbufferAImage,
 		gbufferAImageMemory
@@ -128,7 +128,7 @@ void VulkanFramebuffer::createDeferredColorBufferResource()
 		RM->GetExtent().height,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		gbufferBImage,
 		gbufferBImageMemory
@@ -142,7 +142,7 @@ void VulkanFramebuffer::createDeferredColorBufferResource()
 		RM->GetExtent().height,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		gbufferCImage,
 		gbufferCImageMemory
@@ -156,7 +156,7 @@ void VulkanFramebuffer::createDeferredColorBufferResource()
 		RM->GetExtent().height,
 		VK_FORMAT_R8G8B8A8_SRGB,
 		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		gbufferDImage,
 		gbufferDImageMemory
@@ -168,15 +168,15 @@ void VulkanFramebuffer::createDeferredColorBufferResource()
 	RM->createImage(
 		RM->GetExtent().width,
 		RM->GetExtent().height,
-		VK_FORMAT_R8G8B8A8_SRGB,
+		VK_FORMAT_B10G11R11_UFLOAT_PACK32,
 		VK_IMAGE_TILING_OPTIMAL,
-		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		gbufferEImage,
 		gbufferEImageMemory
 		);
 
-	gbufferEImageView = RM->createImageView(gbufferEImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+	gbufferEImageView = RM->createImageView(gbufferEImage, VK_FORMAT_B10G11R11_UFLOAT_PACK32, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void VulkanFramebuffer::destroyDeferredColorBufferResource()

@@ -1,4 +1,9 @@
 #include "RenderGround.h"
+#include "RenderingResourceLocater.h"
+#include "GlobalRenderData.h"
+#include "VulkanSampler.h"
+#include "VulkanShaders.h"
+#include "RenderingSettingLocater.h"
 
 VulkanRenderGround::VulkanRenderGround()
 {
@@ -20,44 +25,107 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 	RM->createCommandPool();
 	RM->CreateRenderState();
 
+
+	/* ===================== Create Layout ===================== */
 	VulkanSwapChain* vulkanSwapChain = new VulkanSwapChain();
 	vulkanSwapChain->createSwapChain();
 	vulkanSwapChain->createSwapChainImageViews();
 	RM->SetSwapChain(vulkanSwapChain);
 
-	vulkanPipelineResource = new VulkanPipelineResource();
-	vulkanPipelineResource->createTextureSampler();
-	vulkanPipelineResource->createUniformBuffers(sizeof(UniformBufferObject));
-	vulkanPipelineResource->createUniformDescriptorPool();
-	vulkanPipelineResource->createObjectDescriptorPool();
-	vulkanPipelineResource->createUniformDescriptorSetLayout();
-	vulkanPipelineResource->createObjectDescriptorSetLayout();
+	RenderingSettingLocater::provide(vulkanSwapChain->GetSwapChainImageExtent());
+	/* ===================== Create Layout ===================== */
 
-	vulkanRenderPass = new VulkanRenderPass();
-	vulkanRenderPass->createDefaultRenderPass();
-	vulkanRenderPass->createToScreenPipelines(vulkanPipelineResource);
+	layout = new PipelineLayout();
+	layout->createUniformDescriptorPool();
+	layout->createObjectDescriptorPool();
+	layout->createUniformDescriptorSetLayout();
+	layout->createObjectDescriptorSetLayout();
+	layout->CreatePipelineLayout();
 
+	RenderingResourceLocater::provide(layout);
+
+
+	/* ===================== Create GlobalData ===================== */
+
+	globalData = new GlobalRenderData();
+	globalData->createUniformBuffers(sizeof(UniformBufferObject));
+	globalData->createUniformDescriptorSets(RenderingResourceLocater::get_layout()->GetUniformDescriptorPool(),
+											RenderingResourceLocater::get_layout()->GetUniformDescriptorSetLayout());
+
+	RenderingResourceLocater::provide(globalData);
+	
+
+	/* ===================== Create Samplter ===================== */
+
+	sampler = new VulkanSampler();
+	sampler->createTextureSampler();
+	RenderingResourceLocater::provide(sampler);
+
+	/* ===================== Create RenderPass ===================== */
+
+	deferredPass = new DeferredRenderPass();
+	deferredPass->createRenderPass();
+
+	forwardPass = new ForwardRenderPass();
+	//forwardPass->createRenderPass();
+
+	RenderingResourceLocater::provide(deferredPass);
+	RenderingResourceLocater::provide(forwardPass);
+
+	/* ===================== Create Shader ======================= */
+
+	VulkanShaders* deferredGeometryShader = new VulkanShaders(RM->GetDevice(), "vert.spv", "frag.spv");
+	VulkanShaders* deferredLightingShader = new VulkanShaders(RM->GetDevice(), "vert.spv", "frag.spv");
+	VulkanShaders* forwardShader = new VulkanShaders(RM->GetDevice(), "vert.spv", "frag.spv");
+	VulkanShaders* postprocessShader = new VulkanShaders(RM->GetDevice(), "vert.spv", "frag.spv");
+
+
+	/* ===================== Create Pipeline ===================== */
+
+	DeferredGeomtryPipeline* dgp =	new DeferredGeomtryPipeline();
+	dgp->createGraphicsPipeline(	deferredGeometryShader->GetVertexShader(),	deferredGeometryShader->GetFragmentShader());
+	DeferredLightingPipeline* dlp = new DeferredLightingPipeline();
+	dlp->createGraphicsPipeline(	deferredLightingShader->GetVertexShader(),	deferredLightingShader->GetFragmentShader());
+	ForwardPipeline* forw =			new ForwardPipeline();
+	//forw->createGraphicsPipeline(	forwardShader->GetVertexShader(),			forwardShader->GetFragmentShader());
+	PostprocessPipeline* pp =		new PostprocessPipeline();
+	//pp->createGraphicsPipeline(		postprocessShader->GetVertexShader(),		postprocessShader->GetFragmentShader());
+
+	RenderingResourceLocater::provide(dgp);
+	RenderingResourceLocater::provide(dlp);
+	RenderingResourceLocater::provide(forw);
+	RenderingResourceLocater::provide(pp);
+
+	/* ===================== Load Assets ===================== */
 
 	VulkanModel* vulkanModel = new VulkanModel();
 	VulkanTexture* vulkanTexture = new VulkanTexture();
+
 	vulkanSceneManager = new VulkanSceneManager();
-	vulkanSceneManager->SetPipelineResource(vulkanPipelineResource);
+	RenderingResourceLocater::provide(vulkanSceneManager);
+
 	vulkanSceneManager->loadTexture(vulkanTexture);
+
 	VulkanRModel* model = vulkanSceneManager->loadRenderModel(vulkanModel);
-	VulkanMaterial * material = vulkanSceneManager->loadMaterial(vulkanRenderPass->GetGraphicPipeline());
+	VulkanMaterial * material = vulkanSceneManager->loadMaterial();
 	model->SetMaterial(material);
 	
+
+
+
+
 	VulkanFramebuffer* vulkanFrameBuffer = new VulkanFramebuffer();
 	vulkanFrameBuffer->createDepthResource();
-	vulkanFrameBuffer->createSwapChainFrameBuffers( vulkanRenderPass);
+	vulkanFrameBuffer->createDeferredColorBufferResource();
+	vulkanFrameBuffer->createDeferredFrameBuffer(RenderingResourceLocater::get_pass_deferred());
+	//vulkanFrameBuffer->createSwapChainFrameBuffers(RenderingResourceLocater::get_pass_deferred());
 	RM->SetFramebuffer(vulkanFrameBuffer);
 
 	size_t commandBufferSize = RM->GetFramebuffer()->GetFrameBufferSize();
 	vulkanCommandBuffer = new VulkanFrameRenderCommandBuffer();
 	vulkanCommandBuffer->createCommandBuffer(RM->GetCommandPool(), commandBufferSize);
 
-	vulkanRendering = new VulkanTestRendering(vulkanRenderPass);
-	vulkanRendering->SetSceneManager(vulkanSceneManager);
+	vulkanRendering = new VulkanTestRendering();
 	vulkanRendering->Config(vulkanCommandBuffer);
 
 	RM->CreateSync();
@@ -91,8 +159,9 @@ void VulkanRenderGround::drawFrame()
 
 	RM->CheckPrivousFrameFinishend(imageIndex);
 
-	vulkanPipelineResource->updateUniformBuffer(imageIndex);
-	vulkanPipelineResource->updateTexture(imageIndex);
+	globalData->updateUniformBuffer(imageIndex);
+	//globalData->updateTexture(imageIndex);
+
 	vulkanSceneManager->updateModel();
 
 
@@ -125,15 +194,25 @@ void VulkanRenderGround::cleanupSwapChain() {
 
 	vulkanCommandBuffer->destroyCommandBuffer();
 
-	vulkanRenderPass->destroyToScreenPipelines();
-	vulkanRenderPass->destroyDefaultRenderPass();
+
+	RenderingResourceLocater::get_pipeline_deferred_geometry()->destroyGraphicPipeline();
+	RenderingResourceLocater::get_pipeline_deferred_lighting()->destroyGraphicPipeline();
+	RenderingResourceLocater::get_pipeline_forward()->destroyGraphicPipeline();
+	RenderingResourceLocater::get_pipeline_postprocess()->destroyGraphicPipeline();
+
+	RenderingResourceLocater::get_pass_forward()->destroyRenderPass();
+
+
+	RenderingResourceLocater::get_pass_deferred()->destroyRenderPass();
+	RenderingResourceLocater::get_pass_forward()->destroyRenderPass();
 
 	RM->GetSwapChain()->destroySwapChainImageViews();
 	RM->GetSwapChain()->destroySwapChain();
 
-	vulkanPipelineResource->destroyUniformBuffers();
-	vulkanPipelineResource->destroyUniformDescriptorPool();
-	vulkanPipelineResource->destroyUniformDescriptorSetLayout();
+	globalData->destroyUniformBuffers();
+
+	RenderingResourceLocater::get_layout()->destroyUniformDescriptorPool();
+	RenderingResourceLocater::get_layout()->destroyUniformDescriptorSetLayout();
 
 }
 
@@ -144,7 +223,7 @@ void VulkanRenderGround::cleanup()
 
 	cleanupSwapChain();
 
-	vulkanPipelineResource->destroyTextureSampler();
+	sampler->destroyTextureSampler();
 
 
 	vulkanSceneManager->unloadTextures();
@@ -170,16 +249,21 @@ void VulkanRenderGround::recreateSwapChain()
 	RM->GetSwapChain()->createSwapChain();
 	RM->GetSwapChain()->createSwapChainImageViews();
 
-	vulkanRenderPass->createDefaultRenderPass();
+	RenderingResourceLocater::get_pass_deferred()->createRenderPass();
 
-	vulkanPipelineResource->createUniformDescriptorPool();
-	vulkanPipelineResource->createUniformDescriptorSetLayout();
-	vulkanPipelineResource->createUniformBuffers(sizeof(UniformBufferObject));
+	RenderingResourceLocater::get_layout()->createUniformDescriptorPool();
+	RenderingResourceLocater::get_layout()->createUniformDescriptorSetLayout();
+	globalData->createUniformBuffers(sizeof(UniformBufferObject));
 
-	vulkanRenderPass->createToScreenPipelines(vulkanPipelineResource);
+	/*
+	RenderingResourceLocater::get_pipeline_deferred_geometry()->createGraphicsPipeline();
+	RenderingResourceLocater::get_pipeline_deferred_lighting()->createGraphicsPipeline();
+	RenderingResourceLocater::get_pipeline_forward()->createGraphicsPipeline();
+	RenderingResourceLocater::get_pipeline_postprocess()->createGraphicsPipeline();
+	*/
 
 	RM->GetFramebuffer()->createDepthResource();
-	RM->GetFramebuffer()->createSwapChainFrameBuffers(vulkanRenderPass);
+	RM->GetFramebuffer()->createSwapChainFrameBuffers(RenderingResourceLocater::get_pass_deferred());
 
 	size_t commandBufferSize = RM->GetFramebuffer()->GetFrameBufferSize();
 	vulkanCommandBuffer->createCommandBuffer(RM->GetCommandPool(), commandBufferSize);
