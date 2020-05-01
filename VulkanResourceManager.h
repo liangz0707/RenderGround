@@ -49,6 +49,8 @@ public:
 		VkImage& image, 
 		VkDeviceMemory& imageMemory);
 
+	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory, VkImageLayout layout);
+
 	void createSampler(VkSamplerCreateInfo* samplerInfo, VkSampler& sampler);
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 	void destroyImage(VkImage);

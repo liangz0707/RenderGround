@@ -15,9 +15,7 @@ public:
 
 	virtual void createGraphicsPipeline(
 		VkShaderModule vertShaderModule,
-		VkShaderModule fragShaderModule,
-		VkExtent2D swapChainExtent,
-		VkRenderPass renderPass);
+		VkShaderModule fragShaderModule);
 
 	virtual void destroyGraphicPipeline();
 

@@ -26,7 +26,7 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 	RM->CreateRenderState();
 
 
-	/* ===================== Create Layout ===================== */
+	/* ===================== Create SwapChain ===================== */
 	VulkanSwapChain* vulkanSwapChain = new VulkanSwapChain();
 	vulkanSwapChain->createSwapChain();
 	vulkanSwapChain->createSwapChainImageViews();
@@ -74,10 +74,10 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 
 	/* ===================== Create Shader ======================= */
 
-	VulkanShaders* deferredGeometryShader = new VulkanShaders(RM->GetDevice(), "vert.spv", "frag.spv");
-	VulkanShaders* deferredLightingShader = new VulkanShaders(RM->GetDevice(), "vert.spv", "frag.spv");
-	VulkanShaders* forwardShader = new VulkanShaders(RM->GetDevice(), "vert.spv", "frag.spv");
-	VulkanShaders* postprocessShader = new VulkanShaders(RM->GetDevice(), "vert.spv", "frag.spv");
+	deferredGeometryShader = new VulkanShaders(RM->GetDevice(), "shaders/Compiled/DeferredGeometry_vert.spv", "shaders/Compiled/DeferredGeometry_frag.spv");
+	deferredLightingShader = new VulkanShaders(RM->GetDevice(), "shaders/Compiled/DeferredLighting_vert.spv", "shaders/Compiled/DeferredLighting_frag.spv");
+	forwardShader = new VulkanShaders(RM->GetDevice(), "shaders/Compiled/Forward_vert.spv", "shaders/Compiled/Forward_frag.spv");
+	postprocessShader = new VulkanShaders(RM->GetDevice(), "shaders/Compiled/Postprocessing_vert.spv", "shaders/Compiled/Postprocessing_frag.spv");
 
 
 	/* ===================== Create Pipeline ===================== */
@@ -110,9 +110,6 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 	VulkanMaterial * material = vulkanSceneManager->loadMaterial();
 	model->SetMaterial(material);
 	
-
-
-
 
 	VulkanFramebuffer* vulkanFrameBuffer = new VulkanFramebuffer();
 	vulkanFrameBuffer->createDepthResource();
@@ -160,7 +157,6 @@ void VulkanRenderGround::drawFrame()
 	RM->CheckPrivousFrameFinishend(imageIndex);
 
 	globalData->updateUniformBuffer(imageIndex);
-	//globalData->updateTexture(imageIndex);
 
 	vulkanSceneManager->updateModel();
 
@@ -249,21 +245,32 @@ void VulkanRenderGround::recreateSwapChain()
 	RM->GetSwapChain()->createSwapChain();
 	RM->GetSwapChain()->createSwapChainImageViews();
 
-	RenderingResourceLocater::get_pass_deferred()->createRenderPass();
+	RenderingSettingLocater::provide(RM->GetSwapChain()->GetSwapChainImageExtent());
 
 	RenderingResourceLocater::get_layout()->createUniformDescriptorPool();
 	RenderingResourceLocater::get_layout()->createUniformDescriptorSetLayout();
-	globalData->createUniformBuffers(sizeof(UniformBufferObject));
+	RenderingResourceLocater::get_layout()->CreatePipelineLayout();
+
+	RenderingResourceLocater::get_global_render_data()->createUniformBuffers(sizeof(UniformBufferObject));
+	RenderingResourceLocater::get_global_render_data()->createUniformDescriptorSets(RenderingResourceLocater::get_layout()->GetUniformDescriptorPool(),
+		RenderingResourceLocater::get_layout()->GetUniformDescriptorSetLayout());
+
+
+	RenderingResourceLocater::get_pass_deferred()->createRenderPass();
+
+	
+	RenderingResourceLocater::get_pipeline_deferred_geometry()->createGraphicsPipeline(deferredGeometryShader->GetVertexShader(), deferredGeometryShader->GetFragmentShader());
+	RenderingResourceLocater::get_pipeline_deferred_lighting()->createGraphicsPipeline(deferredLightingShader->GetVertexShader(), deferredLightingShader->GetFragmentShader());
+
 
 	/*
-	RenderingResourceLocater::get_pipeline_deferred_geometry()->createGraphicsPipeline();
-	RenderingResourceLocater::get_pipeline_deferred_lighting()->createGraphicsPipeline();
 	RenderingResourceLocater::get_pipeline_forward()->createGraphicsPipeline();
 	RenderingResourceLocater::get_pipeline_postprocess()->createGraphicsPipeline();
 	*/
 
 	RM->GetFramebuffer()->createDepthResource();
-	RM->GetFramebuffer()->createSwapChainFrameBuffers(RenderingResourceLocater::get_pass_deferred());
+	RM->GetFramebuffer()->createDeferredColorBufferResource();
+	RM->GetFramebuffer()->createDeferredFrameBuffer(RenderingResourceLocater::get_pass_deferred());
 
 	size_t commandBufferSize = RM->GetFramebuffer()->GetFrameBufferSize();
 	vulkanCommandBuffer->createCommandBuffer(RM->GetCommandPool(), commandBufferSize);

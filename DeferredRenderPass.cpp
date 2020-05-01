@@ -19,8 +19,8 @@ void DeferredRenderPass::createRenderPass()
 	gbufferAAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	gbufferAAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	gbufferAAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	gbufferAAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	gbufferAAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	gbufferAAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	gbufferAAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentDescription gbufferBAttachment = {};
 	gbufferBAttachment.format = VK_FORMAT_R8G8B8A8_SRGB;
@@ -29,8 +29,8 @@ void DeferredRenderPass::createRenderPass()
 	gbufferBAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	gbufferBAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	gbufferBAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	gbufferBAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	gbufferBAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	gbufferBAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	gbufferBAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentDescription gbufferCAttachment = {};
 	gbufferCAttachment.format = VK_FORMAT_R8G8B8A8_SRGB;
@@ -39,8 +39,8 @@ void DeferredRenderPass::createRenderPass()
 	gbufferCAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	gbufferCAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	gbufferCAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	gbufferCAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	gbufferCAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	gbufferCAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	gbufferCAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentDescription gbufferDAttachment = {};
 	gbufferDAttachment.format = VK_FORMAT_R8G8B8A8_SRGB;
@@ -49,8 +49,8 @@ void DeferredRenderPass::createRenderPass()
 	gbufferDAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	gbufferDAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	gbufferDAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	gbufferDAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	gbufferDAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	gbufferDAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	gbufferDAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentDescription gbufferEAttachment = {};
 	gbufferEAttachment.format = VK_FORMAT_B10G11R11_UFLOAT_PACK32;
@@ -59,8 +59,8 @@ void DeferredRenderPass::createRenderPass()
 	gbufferEAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	gbufferEAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	gbufferEAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	gbufferEAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	gbufferEAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	gbufferEAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	gbufferEAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentDescription colorAttachment = {};
 	colorAttachment.format = RM->GetSwapChain()->GetSwapChainImageFormat();
@@ -69,7 +69,7 @@ void DeferredRenderPass::createRenderPass()
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	VkAttachmentDescription depthAttachment = {};

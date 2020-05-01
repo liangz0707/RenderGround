@@ -16,6 +16,7 @@
 #include "PipelineLayout.h"
 #include "DeferredRenderPass.h"
 #include "ForwardRenderPass.h"
+#include "VulkanShaders.h"
 
 class VulkanSync;
 class VulkanTestRendering;
@@ -57,5 +58,11 @@ public:
 	PipelineLayout *layout;
 	GlobalRenderData* globalData;
 	VulkanSampler* sampler;
+
+
+	VulkanShaders* deferredGeometryShader;
+	VulkanShaders* deferredLightingShader;
+	VulkanShaders* forwardShader;
+	VulkanShaders* postprocessShader;
 };
 

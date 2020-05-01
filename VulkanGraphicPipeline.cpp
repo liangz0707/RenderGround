@@ -5,9 +5,7 @@ IVulkanGraphicPipeline::IVulkanGraphicPipeline()
 
 void IVulkanGraphicPipeline::createGraphicsPipeline(
 	VkShaderModule vertShaderModule, 
-	VkShaderModule fragShaderModule,
-	VkExtent2D swapChainExtent,
-	VkRenderPass renderPass)
+	VkShaderModule fragShaderModule)
 {
 
 }
