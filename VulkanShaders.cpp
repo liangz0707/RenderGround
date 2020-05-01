@@ -26,10 +26,22 @@ VkShaderModule VulkanShader::createShaderModule(VulkanDevice* vulkanDevice, cons
 	return shaderModule;
 }
 
+void VulkanShader::destoryShaderModule(VulkanDevice* vulkanDevice) {
+
+	vkDestroyShaderModule(vulkanDevice->GetInstance(), shaderModule, nullptr);
+
+}
+
 VulkanShaders::VulkanShaders(VulkanDevice* vulkanDevice,std::string VertexShaderFileName, std::string FragmentShaderFileName)
 {
 	vertexShader = new VulkanShader(vulkanDevice,VertexShaderFileName);
 	fragmentShader = new VulkanShader(vulkanDevice,FragmentShaderFileName);
+}
+
+void VulkanShaders::destoryShaderModules(VulkanDevice* vulkanDevice)
+{
+	vertexShader->destoryShaderModule(vulkanDevice);
+	fragmentShader->destoryShaderModule(vulkanDevice);
 }
 
 VkShaderModule VulkanShaders::GetVertexShader()

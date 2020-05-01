@@ -12,6 +12,7 @@ public:
 
 	VkShaderModule GetShaderInstance();
 	VkShaderModule createShaderModule(VulkanDevice* vulkanDevice, const std::vector<char>& code);
+	void destoryShaderModule(VulkanDevice* vulkanDevice);
 };
 
 class VulkanShaders
@@ -25,6 +26,8 @@ public:
 		VulkanDevice* vulkanDevice,
 		std::string VertexShaderFileName,
 		std::string FragmentShaderFileName);
+
+	void destoryShaderModules(VulkanDevice* vulkanDevice);
 
 	VkShaderModule GetVertexShader();
 	VkShaderModule GetFragmentShader();

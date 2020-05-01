@@ -4,11 +4,11 @@
 
 HINSTANCE windowInstance;
 HWND window;
+VulkanRenderGround* app;
 
-
+bool isRun ;
 void OnSize(HWND hwnd, UINT flag, int width, int height)
 {
-	// Handle resizing
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -18,14 +18,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg) {
 
 	case WM_DESTROY:
-		DestroyWindow(hWnd);
+		isRun = false;
+		app->cleanup();
+		//DestroyWindow(hWnd);
 		PostQuitMessage(0);
 		break;
 
 	case WM_SIZE: // Handle window resizing 
 		 width = LOWORD(lParam);  // Macro to get the low-order word.
 		 height = HIWORD(lParam); // Macro to get the high-order word.
-
+		 if(app)
+		 app->ReSize(width, height);
 		// Respond to the message:
 		OnSize(hWnd, (UINT)wParam, width, height);
 
@@ -97,9 +100,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow) 
 {
 	createWindow(hInstance);
-
-	VulkanRenderGround* app = new VulkanRenderGround();
-
+	isRun = true;
+	app = new VulkanRenderGround();
+	
 	try {
 		app->init(windowInstance, window);
 
@@ -111,11 +114,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				TranslateMessage(&message);
 				DispatchMessage(&message);
 			}
-
-			app->drawFrame();
+			if(isRun && app->GetWidth() != 0 && app->GetHeight())
+				app->drawFrame();
 		}
 
-		app->cleanup();
 	}
 	catch (const std::exception& e) {
 		std::cerr << e.what() << std::endl;

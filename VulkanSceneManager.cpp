@@ -52,6 +52,16 @@ VulkanMaterial* VulkanSceneManager::loadMaterial()
 	return material;
 }
 
+void VulkanSceneManager::unloadMaterials()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	for (auto material : vulkanMaterials)
+	{
+		RM->destroyBuffer(material->GetDescriptorSetBuffer());
+		RM->freeMemory(material->GetDescriptorSetBufferMemory());
+	}
+}
+
 VulkanRModel* VulkanSceneManager::loadRenderModel(VulkanModel* vulkanModel)
 {
 	VulkanRModel* vulkanRModel = new VulkanRModel();

@@ -17,6 +17,7 @@
 #include "DeferredRenderPass.h"
 #include "ForwardRenderPass.h"
 #include "VulkanShaders.h"
+#include "VulkanDeferredRendering.h"
 
 class VulkanSync;
 class VulkanTestRendering;
@@ -43,6 +44,39 @@ public:
 	void cleanupSwapChain();
 	void cleanup();
 
+	void updateWindowSize()
+	{
+
+		ResetResizedFlag();
+
+	}
+
+	void ReSize(int w, int h)
+	{
+		width = w;
+		height = h;
+		framebufferResized = true;
+	}
+
+	int GetHeight()
+	{
+		return height;
+	}
+	int GetWidth()
+	{
+		return width;
+	}
+	bool IsResized()
+	{
+		return framebufferResized;
+	}
+
+	void ResetResizedFlag()
+	{
+		framebufferResized = false;
+	}
+
+
 public:
 	VulkanApplication* vulkanApplication;
 
@@ -52,7 +86,7 @@ public:
 	VulkanFrameRenderCommandBuffer* vulkanCommandBuffer;
 	VulkanSync* vulkanSync;
 	VulkanSceneManager* vulkanSceneManager;
-	VulkanTestRendering* vulkanRendering;
+	VulkanDeferredRendering* vulkanRendering;
 
 	// 
 	PipelineLayout *layout;
@@ -64,5 +98,11 @@ public:
 	VulkanShaders* deferredLightingShader;
 	VulkanShaders* forwardShader;
 	VulkanShaders* postprocessShader;
+	VulkanShaders* toScreenShader;
+
+
+	bool framebufferResized = false;
+	int height;
+	int width;
 };
 

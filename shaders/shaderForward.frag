@@ -15,15 +15,8 @@ layout(set = 1,binding = 1) uniform PUniformBufferObject {
 
 
 layout(location = 0) out vec4 GbufferA;
-layout(location = 1) out vec4 GbufferB;
-layout(location = 2) out vec4 GbufferC;
-layout(location = 3) out vec4 GbufferD;
-layout(location = 4) out vec4 GbufferE;
 
 void main() {
     GbufferA = texture(texSampler, fragTexCoord);
-    GbufferB = vec4(1,0,0,0.8);
-    GbufferB = vec4(1,1,0,0.5);
-    GbufferC = vec4(0,1,0,0.4);
-    GbufferE = vec4(1,0,1,0.3);
+ 
 }

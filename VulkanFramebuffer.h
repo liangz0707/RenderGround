@@ -36,6 +36,35 @@ public:
 		return vVulkanFrameBuffer[index];
 	}
 
+	VkImageView GetGbufferAImageView()
+	{
+		return gbufferAImageView;
+	}
+
+	VkImageView GetGbufferBImageView()
+	{
+		return gbufferBImageView;
+	}
+
+	VkImageView GetGbufferCImageView()
+	{
+		return gbufferCImageView;
+	}
+
+	VkImageView GetGbufferDImageView()
+	{
+		return gbufferDImageView;
+	}
+
+	VkImageView GetGbufferEImageView()
+	{
+		return gbufferEImageView;
+	}
+
+	VkImageView GetDepthImageView()
+	{
+		return depthImageView;
+	}
 
 private:
 	VkFramebuffer createFrameBuffer(std::vector<VkImageView> attachments,

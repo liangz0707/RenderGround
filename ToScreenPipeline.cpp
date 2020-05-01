@@ -1,8 +1,9 @@
-#include "ForwardPipeline.h"
-#include "RenderingResourceLocater.h"
+#include "ToScreenPipeline.h"
 #include "RenderingSettingLocater.h"
+#include "RenderingResourceLocater.h"
 
-void ForwardPipeline::createGraphicsPipeline(
+
+void ToScreenPipeline::createGraphicsPipeline(
 	VkShaderModule vertShaderModule,
 	VkShaderModule fragShaderModule)
 {
@@ -18,7 +19,6 @@ void ForwardPipeline::createGraphicsPipeline(
 	fragShaderStageInfo.module = fragShaderModule;
 	fragShaderStageInfo.pName = "main";
 
-	// 合并各个Stage组成一个管线的可编程部分
 	VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
 
@@ -33,8 +33,6 @@ void ForwardPipeline::createGraphicsPipeline(
 	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
 	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
-	// 固定管线：Input assembly
-	// 描述从顶点数据中要绘制的几何体类型和是否开启图元重启。
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -84,24 +82,27 @@ void ForwardPipeline::createGraphicsPipeline(
 	multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
 	multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
-	//VkPipelineDepthStencilStateCreateInfo  =
+	VkPipelineColorBlendAttachmentState screenAttachment = {};
+	screenAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	screenAttachment.blendEnable = VK_FALSE;
+	screenAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+	screenAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+	screenAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
+	screenAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+	screenAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+	screenAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
 
-	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	colorBlendAttachment.blendEnable = VK_FALSE;
-	colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-	colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
-	colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-	colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
+	VkPipelineColorBlendAttachmentState colorBlendAttachment[] =
+	{
+		screenAttachment,
+	};
 
 	VkPipelineColorBlendStateCreateInfo colorBlending = {};
 	colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	colorBlending.logicOpEnable = VK_FALSE;
 	colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
 	colorBlending.attachmentCount = 1;
-	colorBlending.pAttachments = &colorBlendAttachment;
+	colorBlending.pAttachments = colorBlendAttachment;
 	colorBlending.blendConstants[0] = 0.0f; // Optional
 	colorBlending.blendConstants[1] = 0.0f; // Optional
 	colorBlending.blendConstants[2] = 0.0f; // Optional
@@ -117,6 +118,7 @@ void ForwardPipeline::createGraphicsPipeline(
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicState.dynamicStateCount = 2;
 	dynamicState.pDynamicStates = dynamicStates;
+
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
@@ -141,7 +143,7 @@ void ForwardPipeline::createGraphicsPipeline(
 	pipelineInfo.pViewportState = &viewportState;
 	pipelineInfo.pRasterizationState = &rasterizer;
 	pipelineInfo.pMultisampleState = &multisampling;
-	pipelineInfo.pDepthStencilState = &depthStencil; // Optional
+	//pipelineInfo.pDepthStencilState = &depthStencil; // Optional
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = nullptr; // Optional
 	pipelineInfo.layout = RenderingResourceLocater::get_layout()->GetInstance();
@@ -150,7 +152,7 @@ void ForwardPipeline::createGraphicsPipeline(
 	//然后指定这个GraphicsPipeline是哪个suboass使用的。
 
 	pipelineInfo.renderPass = RenderingResourceLocater::get_pass_deferred()->GetInstance();;
-	pipelineInfo.subpass = 2;
+	pipelineInfo.subpass = 4;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
 
@@ -159,3 +161,4 @@ void ForwardPipeline::createGraphicsPipeline(
 
 
 }
+

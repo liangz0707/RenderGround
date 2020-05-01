@@ -13,6 +13,7 @@
 #include "ForwardRenderPass.h"
 #include "VulkanSampler.h"
 #include "GlobalRenderData.h"
+#include "ToScreenPipeline.h"
 
 class DeferredGeomtryPipeline;
 class ForwardPipeline;
@@ -30,6 +31,8 @@ public:
     static IVulkanGraphicPipeline* get_pipeline_postprocess() { return pipeline_postprocess; }
     static IVulkanGraphicPipeline* get_pipeline_deferred_lighting() { return pipeline_deferred_lighting; }
     static IVulkanGraphicPipeline* get_pipeline_forward() { return pipeline_forward; }
+    static IVulkanGraphicPipeline* get_pipeline_to_screen() { return pipeline_to_screen; }
+    
 
     static IVulkanRenderPass* get_pass_deferred() { return pass_deferred; }
     static IVulkanRenderPass* get_pass_forward() { return pass_forward; }
@@ -68,6 +71,11 @@ public:
         pipeline_postprocess = service;
     }
 
+    static void provide(ToScreenPipeline* service)
+    {
+        pipeline_to_screen = service;
+    }
+
     static void provide(IVulkanPipelineLayout* service)
     {
         pipeline_layout = service;
@@ -99,7 +107,8 @@ private:
     static IVulkanGraphicPipeline* pipeline_forward;
     static IVulkanGraphicPipeline* pipeline_deferred_geometry;
     static IVulkanGraphicPipeline* pipeline_deferred_lighting;
-
+    static IVulkanGraphicPipeline* pipeline_to_screen;
+    
     static IVulkanRenderPass* pass_deferred;
     static IVulkanRenderPass* pass_forward;
     static IVulkanRenderPass* pass_default;

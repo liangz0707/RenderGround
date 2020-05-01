@@ -127,11 +127,7 @@ void VulkanApplication::createSurface(HINSTANCE windowInstance,HWND window) {
 	assert(result == VK_SUCCESS);
 }
 
-void VulkanApplication::updateWindowSize()
-{
 
-	ResetResizedFlag();
-}
 
 QueueFamilyIndices VulkanApplication::findQueueFamilies(VkPhysicalDevice device) {
 	QueueFamilyIndices indices;

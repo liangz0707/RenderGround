@@ -94,87 +94,153 @@ void DeferredRenderPass::createRenderPass()
 	// Subpass Generate
 
 
-	// step1
-	VkAttachmentReference colorReferences[5] = {
-		{ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }, // Light, emissive materials write here!
-		{ 1, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }, // Light, emissive materials write here!
-		{ 2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }, // Albedo
-		{ 3, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }, // Normals
-		{ 4, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }, // Normals
+	/* ===================== step1 :Deferred Geometry =================  */
+	VkAttachmentReference gbufferReferences[5] = {
+		{ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL },
+		{ 1, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }, 
+		{ 2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }, 
+		{ 3, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }, 
+		{ 4, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL }, 
 	};
 
-	VkAttachmentReference depthReference = { 6, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+	VkAttachmentReference depthGbufferReference = { 6, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
 
-	VkSubpassDescription subpass1 = {};
-	subpass1.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass1.colorAttachmentCount = 5;
-	subpass1.pColorAttachments = colorReferences;
-	subpass1.pDepthStencilAttachment = &depthReference;
+	VkSubpassDescription deferredGeomteryPass = {};
+	deferredGeomteryPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	deferredGeomteryPass.colorAttachmentCount = 5;
+	deferredGeomteryPass.pColorAttachments = gbufferReferences;
+	deferredGeomteryPass.pDepthStencilAttachment = &depthGbufferReference;
 
 
-	VkAttachmentReference inputReferences[6] = {
-		{ 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }, // Position
-		{ 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }, // Normal
-		{ 2, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }, // Position
-		{ 3, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }, // Depth
-		{ 4, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }, // Depth
-		{ 6, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL  }, // Depth
+	/* ===================== step2 :Deferred Lighting =================  */
+	VkAttachmentReference lightingColorReferences = { 4, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+
+	VkAttachmentReference inputGbufferReferences[6] = {
+	{ 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }, 
+	{ 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }, 
+	{ 2, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }, 
+	{ 3, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }, 
+	{ 6, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL  }, // Depth
 	};
 
-	// step2
+	VkSubpassDescription deferredLightingPass = {};
+	deferredLightingPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	deferredLightingPass.colorAttachmentCount = 1;
+	deferredLightingPass.pColorAttachments = &lightingColorReferences;
+	deferredLightingPass.inputAttachmentCount = 5;
+	deferredLightingPass.pInputAttachments = inputGbufferReferences;
+
+
+	/* ===================== step3 : Forward =================  */
+	VkAttachmentReference forwardColorReferences = { 4, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+
+	VkAttachmentReference forwardDepthReference = { 6, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+
+
+	VkSubpassDescription forwardPass = {};
+	forwardPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	forwardPass.colorAttachmentCount = 1;
+	forwardPass.pColorAttachments = &forwardColorReferences;
+	forwardPass.pDepthStencilAttachment = &forwardDepthReference;
+
+	/* ===================== step4 : Postpcess =================  */
+	VkAttachmentReference postColorReferences = { 4, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+
+	VkAttachmentReference postInputReferences = { 4, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+
+
+	VkSubpassDescription postProcessPass = {};
+	postProcessPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	postProcessPass.colorAttachmentCount = 1;
+	postProcessPass.pColorAttachments = &postColorReferences;
+	postProcessPass.inputAttachmentCount = 1;
+	postProcessPass.pInputAttachments = &postInputReferences;
+
+	/* ===================== step5 : ToScreen =================  */
 	VkAttachmentReference colorcReferences = { 5, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
 
+	VkAttachmentReference toScreenInputReferences = { 4, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 
-	VkSubpassDescription subpass2 = {};
-	subpass2.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass2.colorAttachmentCount = 1;
-	subpass2.pColorAttachments = &colorcReferences;
-	subpass2.inputAttachmentCount = 6;
-	subpass2.pInputAttachments = inputReferences;
+
+	VkSubpassDescription toScreenPass = {};
+	toScreenPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	toScreenPass.colorAttachmentCount = 1;
+	toScreenPass.pColorAttachments = &colorcReferences;
+	toScreenPass.inputAttachmentCount = 1;
+	toScreenPass.pInputAttachments = &toScreenInputReferences;
 
 
 
 	// Create RenderPass
 
-	std::vector< VkSubpassDescription> subpass =
+	std::vector< VkSubpassDescription> subpasses =
 	{
-		subpass1,
-		subpass2
+		deferredGeomteryPass,
+		deferredLightingPass,
+		forwardPass,
+		postProcessPass,
+		toScreenPass
 	};
 
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 	renderPassInfo.pAttachments = attachments.data();
-	renderPassInfo.subpassCount = 2;
-	renderPassInfo.pSubpasses = subpass.data();
+	renderPassInfo.subpassCount =5;
+	renderPassInfo.pSubpasses = subpasses.data();
 
 	// Dependency
 
-	VkSubpassDependency dependency1 = {};
-	dependency1.srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependency1.dstSubpass = 0;
-	dependency1.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency1.srcAccessMask = 0;
-	dependency1.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency1.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	VkSubpassDependency beginToGeometryToDependency = {};
+	beginToGeometryToDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	beginToGeometryToDependency.dstSubpass = 0;
+	beginToGeometryToDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	beginToGeometryToDependency.srcAccessMask = 0;
+	beginToGeometryToDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	beginToGeometryToDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-	VkSubpassDependency dependency2 = {};
-	dependency2.srcSubpass = 0;
-	dependency2.dstSubpass = 1;
-	dependency2.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency2.srcAccessMask = 0;
-	dependency2.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency2.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	VkSubpassDependency geometryToLightingDependency = {};
+	geometryToLightingDependency.srcSubpass = 0;
+	geometryToLightingDependency.dstSubpass = 1;
+	geometryToLightingDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	geometryToLightingDependency.srcAccessMask = 0;
+	geometryToLightingDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	geometryToLightingDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
+	VkSubpassDependency lightingToFowardDependency = {};
+	lightingToFowardDependency.srcSubpass = 1;
+	lightingToFowardDependency.dstSubpass = 2;
+	lightingToFowardDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	lightingToFowardDependency.srcAccessMask = 0;
+	lightingToFowardDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	lightingToFowardDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+	VkSubpassDependency forwardToPostDependency = {};
+	forwardToPostDependency.srcSubpass = 2;
+	forwardToPostDependency.dstSubpass = 3;
+	forwardToPostDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	forwardToPostDependency.srcAccessMask = 0;
+	forwardToPostDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	forwardToPostDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+	VkSubpassDependency postToScreenDependency = {};
+	postToScreenDependency.srcSubpass = 3;
+	postToScreenDependency.dstSubpass = 4;
+	postToScreenDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	postToScreenDependency.srcAccessMask = 0;
+	postToScreenDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	postToScreenDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
 	std::vector<VkSubpassDependency> dependencys =
 	{
-		dependency1,
-		dependency2
+		beginToGeometryToDependency,
+		geometryToLightingDependency,
+		lightingToFowardDependency,
+		forwardToPostDependency,
+		postToScreenDependency
 	};
 
-	renderPassInfo.dependencyCount = 2;
+	renderPassInfo.dependencyCount = 5;
 	renderPassInfo.pDependencies = dependencys.data();
 
 

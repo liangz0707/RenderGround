@@ -15,6 +15,7 @@ class GlobalRenderData
 public:
 	GlobalRenderData();
 	void createUniformBuffers(VkDeviceSize bufferSize);
+	void createGbufferDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout layout);
 	void createUniformDescriptorSets(VkDescriptorPool pool, VkDescriptorSetLayout layout);
 	void destroyUniformBuffers();
 	void updateUniformBuffer(int swapChainImageIndex);
@@ -22,7 +23,13 @@ public:
 	{
 		return uniformDescriptorSets[swapChainImageIndex];
 	}
+	VkDescriptorSet getGbufferDescriptorSet()
+	{
+		return gbufferDescriptorSet;
+	}
 private:
+
+	VkDescriptorSet gbufferDescriptorSet;
 	std::vector<VkBuffer> uniformBuffers;
 	std::vector<VkDeviceMemory> uniformBuffersMemory;
 	std::vector<VkDescriptorSet> uniformDescriptorSets;

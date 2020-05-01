@@ -19,6 +19,7 @@ class VulkanSceneManager
 public:
 	VulkanSceneManager();
 	VulkanMaterial* loadMaterial();
+	void unloadMaterials();
 	void updateModel();
 	void updateMaterial();
 

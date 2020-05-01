@@ -35,7 +35,7 @@ void VulkanSampler::createTextureSampler() {
 
 void VulkanSampler::destroyTextureSampler()
 {
-	//VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	//VkDevice vkDevice = RM->GetDevice()->GetInstance();
-	//vkDestroySampler(vkDevice, textureSampler, nullptr);
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+	vkDestroySampler(vkDevice, textureSampler, nullptr);
 }

@@ -2,6 +2,78 @@
 
 
 
+void GlobalRenderData::createGbufferDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout layout)
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+
+
+	VkDescriptorSetLayout layouts = layout;
+	VkDescriptorSetAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = pool;
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(1);
+	allocInfo.pSetLayouts = &layouts;
+
+	if (vkAllocateDescriptorSets(vkDevice, &allocInfo, &gbufferDescriptorSet) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate descriptor sets!");
+	}
+
+	VkDescriptorImageInfo imageInfoGbufferA = {};
+	imageInfoGbufferA.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfoGbufferA.imageView = RM->GetFramebuffer()->GetGbufferAImageView();
+
+	VkDescriptorImageInfo imageInfoGbufferB = {};
+	imageInfoGbufferB.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfoGbufferB.imageView = RM->GetFramebuffer()->GetGbufferBImageView();
+
+	VkDescriptorImageInfo imageInfoGbufferC = {};
+	imageInfoGbufferC.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfoGbufferC.imageView = RM->GetFramebuffer()->GetGbufferCImageView();
+
+	VkDescriptorImageInfo imageInfoGbufferD = {};
+	imageInfoGbufferD.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfoGbufferD.imageView = RM->GetFramebuffer()->GetGbufferDImageView();
+
+	std::array<VkWriteDescriptorSet, 4> descriptorWrites = {};
+
+	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrites[0].dstSet = gbufferDescriptorSet;
+	descriptorWrites[0].dstBinding = 0;
+	descriptorWrites[0].dstArrayElement = 0;
+	descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	descriptorWrites[0].descriptorCount = 1;
+	descriptorWrites[0].pImageInfo = &imageInfoGbufferA;
+
+	descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrites[1].dstSet = gbufferDescriptorSet;
+	descriptorWrites[1].dstBinding = 1;
+	descriptorWrites[1].dstArrayElement = 0;
+	descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	descriptorWrites[1].descriptorCount = 1;
+	descriptorWrites[1].pImageInfo = &imageInfoGbufferB;
+
+	descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrites[2].dstSet = gbufferDescriptorSet;
+	descriptorWrites[2].dstBinding = 2;
+	descriptorWrites[2].dstArrayElement = 0;
+	descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	descriptorWrites[2].descriptorCount = 1;
+	descriptorWrites[2].pImageInfo = &imageInfoGbufferC;
+
+	descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrites[3].dstSet = gbufferDescriptorSet;
+	descriptorWrites[3].dstBinding = 3;
+	descriptorWrites[3].dstArrayElement = 0;
+	descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	descriptorWrites[3].descriptorCount = 1;
+	descriptorWrites[3].pImageInfo = &imageInfoGbufferD;
+
+	vkUpdateDescriptorSets(vkDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+
+}
+
+
 void GlobalRenderData::createUniformDescriptorSets(VkDescriptorPool pool, VkDescriptorSetLayout layout) {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();

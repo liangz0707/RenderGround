@@ -81,70 +81,26 @@ void PostprocessPipeline::createGraphicsPipeline(
 	multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
 	multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
-	VkPipelineColorBlendAttachmentState gbufferABlendAttachment = {};
-	gbufferABlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	gbufferABlendAttachment.blendEnable = VK_FALSE;
-	gbufferABlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	gbufferABlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-	gbufferABlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
-	gbufferABlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	gbufferABlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-	gbufferABlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
-
-	VkPipelineColorBlendAttachmentState gbufferBBlendAttachment = {};
-	gbufferBBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	gbufferBBlendAttachment.blendEnable = VK_FALSE;
-	gbufferBBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	gbufferBBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-	gbufferBBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
-	gbufferBBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	gbufferBBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-	gbufferBBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
-
-	VkPipelineColorBlendAttachmentState gbufferCBlendAttachment = {};
-	gbufferCBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	gbufferCBlendAttachment.blendEnable = VK_FALSE;
-	gbufferCBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	gbufferCBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-	gbufferCBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
-	gbufferCBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	gbufferCBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-	gbufferCBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
-
-	VkPipelineColorBlendAttachmentState gbufferDBlendAttachment = {};
-	gbufferDBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	gbufferDBlendAttachment.blendEnable = VK_FALSE;
-	gbufferDBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	gbufferDBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-	gbufferDBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
-	gbufferDBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	gbufferDBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-	gbufferDBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
-
-	VkPipelineColorBlendAttachmentState gbufferEBlendAttachment = {};
-	gbufferEBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	gbufferEBlendAttachment.blendEnable = VK_FALSE;
-	gbufferEBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	gbufferEBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-	gbufferEBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
-	gbufferEBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-	gbufferEBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-	gbufferEBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
+	VkPipelineColorBlendAttachmentState colorAttachment = {};
+	colorAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	colorAttachment.blendEnable = VK_FALSE;
+	colorAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+	colorAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+	colorAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
+	colorAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+	colorAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+	colorAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment[] =
 	{
-		gbufferABlendAttachment,
-		gbufferBBlendAttachment,
-		gbufferCBlendAttachment,
-		gbufferDBlendAttachment,
-		gbufferEBlendAttachment
+		colorAttachment,
 	};
 
 	VkPipelineColorBlendStateCreateInfo colorBlending = {};
 	colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	colorBlending.logicOpEnable = VK_FALSE;
 	colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
-	colorBlending.attachmentCount = 5;
+	colorBlending.attachmentCount = 1;
 	colorBlending.pAttachments = colorBlendAttachment;
 	colorBlending.blendConstants[0] = 0.0f; // Optional
 	colorBlending.blendConstants[1] = 0.0f; // Optional
@@ -194,8 +150,8 @@ void PostprocessPipeline::createGraphicsPipeline(
 	//接下来需要索引我们创建的RenderPass。
 	//然后指定这个GraphicsPipeline是哪个suboass使用的。
 
-	pipelineInfo.renderPass = RenderingResourceLocater::get_pass_forward()->GetInstance();;
-	pipelineInfo.subpass = 1;
+	pipelineInfo.renderPass = RenderingResourceLocater::get_pass_deferred()->GetInstance();;
+	pipelineInfo.subpass = 3;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
 

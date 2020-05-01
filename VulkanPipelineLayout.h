@@ -20,6 +20,11 @@ public:
 		return entityUniformDescriptorPool;
 	}
 
+
+	virtual VkDescriptorPool GetGbufferDescriptorPool() {
+		return gbufferDescriptorPool;
+	}
+
 	virtual VkDescriptorSetLayout GetUniformDescriptorSetLayout() {
 
 		return uniformDescriptorSetLayout;
@@ -30,11 +35,21 @@ public:
 		return entityUniformDescriptorSetLayout;
 	}
 
+	virtual VkDescriptorSetLayout GetGbufferDescriptorSetLayout() {
+		return gbufferDescriptorSetLayout;
+	}
+
+	void createGbufferDescriptorSetLayout();
+	void destroyGbufferDescriptorSetLayout();
+
+	void createGbufferDescriptorPool();
+	void destroyGbufferDescriptorPool();
+
 	void createUniformDescriptorSetLayout();
 	void destroyUniformDescriptorSetLayout();
+
 	void createUniformDescriptorPool();
 	void destroyUniformDescriptorPool();
-	void createUniformDescriptorSets();
 
 	VkDescriptorSet createObjectDescriptorSet(
 		VkBuffer preEntityUniformBuffer,
@@ -50,9 +65,12 @@ protected:
 
 	VkDescriptorPool uniformDescriptorPool;
 	VkDescriptorPool entityUniformDescriptorPool;
+	VkDescriptorPool gbufferDescriptorPool;
 
+	VkDescriptorSetLayout gbufferDescriptorSetLayout;
 	VkDescriptorSetLayout uniformDescriptorSetLayout;
 	VkDescriptorSetLayout entityUniformDescriptorSetLayout;
+
 
 	std::vector<VkDescriptorSet> uniformDescriptorSets;
 	std::vector<VkBuffer> uniformBuffers;

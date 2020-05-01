@@ -6,10 +6,11 @@ IVulkanPipelineLayout::IVulkanPipelineLayout()
 
 void IVulkanPipelineLayout::CreatePipelineLayout()
 {
-	int layoutCount = 2;
+	int layoutCount = 3;
 	VkDescriptorSetLayout setLayout[] = {
 		uniformDescriptorSetLayout,
-		entityUniformDescriptorSetLayout
+		entityUniformDescriptorSetLayout,
+		gbufferDescriptorSetLayout
 	};
 
 	// 动态的设置uniform Value需要设置PipelineLayout
@@ -61,6 +62,91 @@ void IVulkanPipelineLayout::destroyUniformDescriptorPool() {
 	vkDestroyDescriptorPool(vkDevice, uniformDescriptorPool, nullptr);
 }
 
+void IVulkanPipelineLayout::createGbufferDescriptorSetLayout()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+
+	VkDescriptorSetLayoutBinding gbufferALayoutBinding = {};
+	gbufferALayoutBinding.binding = 0;
+	gbufferALayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	gbufferALayoutBinding.descriptorCount = 1;
+	gbufferALayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkDescriptorSetLayoutBinding gbufferBLayoutBinding = {};
+	gbufferBLayoutBinding.binding = 1;
+	gbufferBLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	gbufferBLayoutBinding.descriptorCount = 1;
+	gbufferBLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkDescriptorSetLayoutBinding gbufferCLayoutBinding = {};
+	gbufferCLayoutBinding.binding = 2;
+	gbufferCLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	gbufferCLayoutBinding.descriptorCount = 1;
+	gbufferCLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkDescriptorSetLayoutBinding gbufferDLayoutBinding = {};
+	gbufferDLayoutBinding.binding = 3;
+	gbufferDLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	gbufferDLayoutBinding.descriptorCount = 1;
+	gbufferDLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	std::array<VkDescriptorSetLayoutBinding, 4> bindings = { 
+		gbufferALayoutBinding,
+		gbufferBLayoutBinding,
+		gbufferCLayoutBinding,
+		gbufferDLayoutBinding
+	};
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+	layoutInfo.pBindings = bindings.data();
+
+	if (vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &gbufferDescriptorSetLayout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
+	}
+}
+
+void IVulkanPipelineLayout::destroyGbufferDescriptorSetLayout()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+
+	vkDestroyDescriptorSetLayout(vkDevice, gbufferDescriptorSetLayout, nullptr);
+}
+
+void IVulkanPipelineLayout::createGbufferDescriptorPool()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+
+	std::array<VkDescriptorPoolSize, 1> poolSizes = {};
+
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(8);
+
+	VkDescriptorPoolCreateInfo poolInfo = {};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = static_cast<uint32_t>(1);
+
+	if (vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &gbufferDescriptorPool) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor pool!");
+	}
+
+}
+
+void IVulkanPipelineLayout::destroyGbufferDescriptorPool()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	VkDevice vkDevice = RM->GetDevice()->GetInstance();
+	vkDestroyDescriptorPool(vkDevice, gbufferDescriptorPool, nullptr);
+}
+
+
 void IVulkanPipelineLayout::createUniformDescriptorSetLayout() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
@@ -90,44 +176,6 @@ void IVulkanPipelineLayout::destroyUniformDescriptorSetLayout() {
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
 	vkDestroyDescriptorSetLayout(vkDevice, uniformDescriptorSetLayout, nullptr);
-}
-
-void IVulkanPipelineLayout::createUniformDescriptorSets() {
-
-	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t layoutsSize = RM->GetSwapChain()->GetSwapChainImageSize();
-	VkDevice vkDevice = RM->GetDevice()->GetInstance();
-
-	std::vector<VkDescriptorSetLayout> layouts(layoutsSize, uniformDescriptorSetLayout);
-	VkDescriptorSetAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = uniformDescriptorPool;
-	allocInfo.descriptorSetCount = static_cast<uint32_t>(layoutsSize);
-	allocInfo.pSetLayouts = layouts.data();
-
-	uniformDescriptorSets.resize(layoutsSize);
-	if (vkAllocateDescriptorSets(vkDevice, &allocInfo, uniformDescriptorSets.data()) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate descriptor sets!");
-	}
-
-	for (size_t i = 0; i < layoutsSize; i++) {
-		VkDescriptorBufferInfo bufferInfo = {};
-		bufferInfo.buffer = uniformBuffers[i];
-		bufferInfo.offset = 0;
-		bufferInfo.range = VK_WHOLE_SIZE;// sizeof(UniformBufferObject);
-
-		std::array<VkWriteDescriptorSet, 1> descriptorWrites = {};
-
-		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[0].dstSet = uniformDescriptorSets[i];
-		descriptorWrites[0].dstBinding = 0;
-		descriptorWrites[0].dstArrayElement = 0;
-		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrites[0].descriptorCount = 1;
-		descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-		vkUpdateDescriptorSets(vkDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-	}
 }
 
 void IVulkanPipelineLayout::createObjectDescriptorPool() {

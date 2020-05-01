@@ -41,20 +41,10 @@ public:
 	{
 		return windowWidth;
 	}
-	bool IsResized()
-	{
-		return framebufferResized;
-	}
 
-	void ResetResizedFlag()
-	{
-		framebufferResized = false;
-	}
-
-	bool framebufferResized = false;
 	VulkanApplication(int,int);
 	void createSurface(HINSTANCE windowInstance, HWND window);
-	void updateWindowSize();
+
 	void checkExtension();
 	void createInstance();
 	void destroyInstance();
