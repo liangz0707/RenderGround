@@ -55,6 +55,7 @@ void IVulkanPipelineLayout::createUniformDescriptorPool() {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }
+
 void IVulkanPipelineLayout::destroyUniformDescriptorPool() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
@@ -278,7 +279,8 @@ VkDescriptorSet IVulkanPipelineLayout::createObjectDescriptorSet(
 	preBufferInfo.offset = 0;
 	preBufferInfo.range = VK_WHOLE_SIZE;// sizeof(UniformBufferObject);
 
-	std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
+	std::vector<VkWriteDescriptorSet> descriptorWrites = {};
+	descriptorWrites.resize(2);
 
 	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	descriptorWrites[0].dstSet = vkDescriptorSet;
