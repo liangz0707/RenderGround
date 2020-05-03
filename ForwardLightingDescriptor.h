@@ -1,6 +1,6 @@
 #pragma once
 #include "IVulkanDescriptor.h"
-class DeferredGeometryDescriptor :
+class ForwardLightingDescriptor :
 	public IVulkanDescriptor
 {
 public:

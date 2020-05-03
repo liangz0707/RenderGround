@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "Utility.h"
 #include "VulkanSwapChain.h"
-#include "VulkanGraphicPipeline.h"
+#include "IVulkanGraphicPipeline.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanResourceManager.h"
 #include "VulkanRenderPass.h"

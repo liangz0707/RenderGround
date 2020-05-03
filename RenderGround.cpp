@@ -4,6 +4,7 @@
 #include "VulkanSampler.h"
 #include "VulkanShaders.h"
 #include "RenderingSettingLocater.h"
+#include "DeferredPipelineLayouts.h"
 
 VulkanRenderGround::VulkanRenderGround()
 {
@@ -35,7 +36,41 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 	width = vulkanSwapChain->GetSwapChainImageExtent().width;
 	height = vulkanSwapChain->GetSwapChainImageExtent().height;
 	RenderingSettingLocater::provide(vulkanSwapChain->GetSwapChainImageExtent());
+
+	/* ===================== Create Descriptor ================= */
+	BatchDescriptor* batchDescriptor = new BatchDescriptor();
+	batchDescriptor->createDescriptorPool();
+	batchDescriptor->createDescriptorSetLayout();
+
+	PostDescriptor* postDescriptor = new PostDescriptor();
+	postDescriptor->createDescriptorPool();
+	postDescriptor->createDescriptorSetLayout();
+
+	DeferredLightingDescriptor* deferredDescriptor = new DeferredLightingDescriptor();
+	deferredDescriptor->createDescriptorPool();
+	deferredDescriptor->createDescriptorSetLayout();
+
+	GlobalDescriptor* globalDescriptor = new GlobalDescriptor();
+	globalDescriptor->createDescriptorPool();
+	globalDescriptor->createDescriptorSetLayout();
+
+	ForwardLightingDescriptor* forwardDescriptor = new ForwardLightingDescriptor();
+	forwardDescriptor->createDescriptorPool();
+	forwardDescriptor->createDescriptorSetLayout();
+
+	RenderingResourceLocater::provide(batchDescriptor);
+	RenderingResourceLocater::provide(postDescriptor);
+	RenderingResourceLocater::provide(deferredDescriptor);
+	RenderingResourceLocater::provide(globalDescriptor);
+	RenderingResourceLocater::provide(forwardDescriptor);
+
 	/* ===================== Create Layout ===================== */
+
+	DeferredPipelineLayouts *deferredPipelineLayouts = new DeferredPipelineLayouts();
+	deferredPipelineLayouts->CreatePipelineLayout();
+
+	RenderingResourceLocater::provide(deferredPipelineLayouts);
+
 
 	layout = new PipelineLayout();
 	layout->createUniformDescriptorPool();
@@ -81,15 +116,44 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 	/* ===================== Create Pipeline ===================== */
 
 	DeferredGeomtryPipeline* dgp =	new DeferredGeomtryPipeline();
-	dgp->createGraphicsPipeline(	deferredGeometryShader->GetVertexShader(),	deferredGeometryShader->GetFragmentShader());
+	dgp->createGraphicsPipeline(
+		deferredGeometryShader->GetVertexShader(),
+		deferredGeometryShader->GetFragmentShader(),
+		0,
+		deferredPass->GetInstance(),
+		layout->GetInstance());
+
 	DeferredLightingPipeline* dlp = new DeferredLightingPipeline();
-	dlp->createGraphicsPipeline(	deferredLightingShader->GetVertexShader(),	deferredLightingShader->GetFragmentShader());
+	dlp->createGraphicsPipeline(	
+		deferredLightingShader->GetVertexShader(),	
+		deferredLightingShader->GetFragmentShader(),
+		1,
+		deferredPass->GetInstance(),
+		layout->GetInstance());
+
 	ForwardPipeline* forw =			new ForwardPipeline();
-	forw->createGraphicsPipeline(	forwardShader->GetVertexShader(),			forwardShader->GetFragmentShader());
+	forw->createGraphicsPipeline(	
+		forwardShader->GetVertexShader(),			
+		forwardShader->GetFragmentShader(),
+		2,
+		deferredPass->GetInstance(),
+		layout->GetInstance());
+
 	PostprocessPipeline* pp =		new PostprocessPipeline();
-	pp->createGraphicsPipeline(		postprocessShader->GetVertexShader(),		postprocessShader->GetFragmentShader());
+	pp->createGraphicsPipeline(		
+		postprocessShader->GetVertexShader(),		
+		postprocessShader->GetFragmentShader(),
+		3,
+		deferredPass->GetInstance(),
+		layout->GetInstance());
+
 	ToScreenPipeline* tos =			new ToScreenPipeline();
-	tos->createGraphicsPipeline(	toScreenShader->GetVertexShader(),			toScreenShader->GetFragmentShader());
+	tos->createGraphicsPipeline(	
+		toScreenShader->GetVertexShader(),			
+		toScreenShader->GetFragmentShader(),
+		4,
+		deferredPass->GetInstance(),
+		layout->GetInstance());
 
 	RenderingResourceLocater::provide(dgp);
 	RenderingResourceLocater::provide(dlp);
@@ -210,6 +274,9 @@ void VulkanRenderGround::cleanupSwapChain() {
 	RenderingResourceLocater::get_layout()->destroyGbufferDescriptorPool();
 	RenderingResourceLocater::get_layout()->destroyGbufferDescriptorSetLayout();
 
+
+	RenderingResourceLocater::get_layout()->DestroyPipelineLayout();
+
 	RenderingResourceLocater::get_pipeline_deferred_geometry()->destroyGraphicPipeline();
 	RenderingResourceLocater::get_pipeline_deferred_lighting()->destroyGraphicPipeline();
 	RenderingResourceLocater::get_pipeline_forward()->destroyGraphicPipeline();
@@ -217,7 +284,23 @@ void VulkanRenderGround::cleanupSwapChain() {
 	RenderingResourceLocater::get_pipeline_to_screen()->destroyGraphicPipeline();
 
 
+	RenderingResourceLocater::get_descriptor_global()->destroyDescriptorPool();
+	RenderingResourceLocater::get_descriptor_global()->destroyDescriptorSetLayout();
+
+	RenderingResourceLocater::get_descriptor_post()->destroyDescriptorPool();
+	RenderingResourceLocater::get_descriptor_post()->destroyDescriptorSetLayout();
+
+	RenderingResourceLocater::get_descriptor_deferred()->destroyDescriptorPool();
+	RenderingResourceLocater::get_descriptor_deferred()->destroyDescriptorSetLayout();
+
+	RenderingResourceLocater::get_descriptor_forward()->destroyDescriptorPool();
+	RenderingResourceLocater::get_descriptor_forward()->destroyDescriptorSetLayout();
+
+	RenderingResourceLocater::get_pipeline_layouts_deferred()->DestroyPipelineLayout();
+
+
 	RenderingResourceLocater::get_pass_deferred()->destroyRenderPass();
+
 
 	RM->GetSwapChain()->destroySwapChainImageViews();
 	RM->GetSwapChain()->destroySwapChain();
@@ -246,6 +329,11 @@ void VulkanRenderGround::cleanup()
 	forwardShader->destoryShaderModules(RM->GetDevice());
 	postprocessShader->destoryShaderModules(RM->GetDevice());
 	toScreenShader->destoryShaderModules(RM->GetDevice());
+
+
+	RenderingResourceLocater::get_descriptor_batch()->destroyDescriptorPool();
+	RenderingResourceLocater::get_descriptor_batch()->destroyDescriptorSetLayout();
+
 
 	RenderingResourceLocater::get_layout()->destroyObjectDescriptorPool();
 	RenderingResourceLocater::get_layout()->destroyObjectDescriptorSetLayout();
@@ -278,6 +366,22 @@ void VulkanRenderGround::recreateSwapChain()
 
 	RenderingSettingLocater::provide(RM->GetSwapChain()->GetSwapChainImageExtent());
 
+	/* ===================== Create Descriptor ================= */
+
+	RenderingResourceLocater::get_descriptor_global()->createDescriptorPool();
+	RenderingResourceLocater::get_descriptor_global()->createDescriptorSetLayout();
+
+	RenderingResourceLocater::get_descriptor_post()->createDescriptorPool();
+	RenderingResourceLocater::get_descriptor_post()->createDescriptorSetLayout();
+
+	RenderingResourceLocater::get_descriptor_deferred()->createDescriptorPool();
+	RenderingResourceLocater::get_descriptor_deferred()->createDescriptorSetLayout();
+
+	RenderingResourceLocater::get_descriptor_forward()->createDescriptorPool();
+	RenderingResourceLocater::get_descriptor_forward()->createDescriptorSetLayout();
+
+	RenderingResourceLocater::get_pipeline_layouts_deferred()->CreatePipelineLayout();
+
 	/* ===================== Create Layout ===================== */
 
 	RenderingResourceLocater::get_layout()->createUniformDescriptorPool();
@@ -286,7 +390,7 @@ void VulkanRenderGround::recreateSwapChain()
 	RenderingResourceLocater::get_layout()->createGbufferDescriptorPool();
 	RenderingResourceLocater::get_layout()->createGbufferDescriptorSetLayout();
 
-
+	RenderingResourceLocater::get_layout()->CreatePipelineLayout();
 
 	/* ===================== Create Samplter ===================== */
 
@@ -297,11 +401,41 @@ void VulkanRenderGround::recreateSwapChain()
 	/* ===================== Create Shader ======================= */
 
 	/* ===================== Create Pipeline ===================== */
-	RenderingResourceLocater::get_pipeline_deferred_geometry()->createGraphicsPipeline(deferredGeometryShader->GetVertexShader(), deferredGeometryShader->GetFragmentShader());
-	RenderingResourceLocater::get_pipeline_deferred_lighting()->createGraphicsPipeline(deferredLightingShader->GetVertexShader(), deferredLightingShader->GetFragmentShader());
-	RenderingResourceLocater::get_pipeline_forward()->createGraphicsPipeline(forwardShader->GetVertexShader(), forwardShader->GetFragmentShader());
-	RenderingResourceLocater::get_pipeline_postprocess()->createGraphicsPipeline(postprocessShader->GetVertexShader(), postprocessShader->GetFragmentShader());
-	RenderingResourceLocater::get_pipeline_to_screen()->createGraphicsPipeline(toScreenShader->GetVertexShader(), toScreenShader->GetFragmentShader());
+	RenderingResourceLocater::get_pipeline_deferred_geometry()->createGraphicsPipeline(
+		deferredGeometryShader->GetVertexShader(), 
+		deferredGeometryShader->GetFragmentShader(),
+		0,
+		RenderingResourceLocater::get_pass_deferred()->GetInstance(),
+		RenderingResourceLocater::get_layout()->GetInstance()
+		);
+	RenderingResourceLocater::get_pipeline_deferred_lighting()->createGraphicsPipeline(
+		deferredLightingShader->GetVertexShader(), 
+		deferredLightingShader->GetFragmentShader(),
+		1,
+		RenderingResourceLocater::get_pass_deferred()->GetInstance(),
+		RenderingResourceLocater::get_layout()->GetInstance()
+		);
+	RenderingResourceLocater::get_pipeline_forward()->createGraphicsPipeline(
+		forwardShader->GetVertexShader(), 
+		forwardShader->GetFragmentShader(),
+		2,
+		RenderingResourceLocater::get_pass_deferred()->GetInstance(),
+		RenderingResourceLocater::get_layout()->GetInstance()
+		);
+	RenderingResourceLocater::get_pipeline_postprocess()->createGraphicsPipeline(
+		postprocessShader->GetVertexShader(), 
+		postprocessShader->GetFragmentShader(),
+		3,
+		RenderingResourceLocater::get_pass_deferred()->GetInstance(),
+		RenderingResourceLocater::get_layout()->GetInstance()
+		);
+	RenderingResourceLocater::get_pipeline_to_screen()->createGraphicsPipeline(
+		toScreenShader->GetVertexShader(),
+		toScreenShader->GetFragmentShader(),
+		4,
+		RenderingResourceLocater::get_pass_deferred()->GetInstance(),
+		RenderingResourceLocater::get_layout()->GetInstance()
+		);
 
 	/* ===================== Create FrameBuffer ===================== */
 	RM->GetFramebuffer()->createDepthResource();

@@ -1,11 +1,14 @@
-#include "VulkanGraphicPipeline.h"
+#include "IVulkanGraphicPipeline.h"
 IVulkanGraphicPipeline::IVulkanGraphicPipeline()
 {
 }
 
 void IVulkanGraphicPipeline::createGraphicsPipeline(
 	VkShaderModule vertShaderModule, 
-	VkShaderModule fragShaderModule)
+	VkShaderModule fragShaderModule,
+	int subpass,
+	VkRenderPass renderpass,
+	VkPipelineLayout layout)
 {
 
 }

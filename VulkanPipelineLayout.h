@@ -1,10 +1,10 @@
 #pragma once
 #include "Common.h"
-#include "VulkanGraphicPipeline.h"
-class IVulkanPipelineLayout
+#include "IVulkanGraphicPipeline.h"
+class VulkanPipelineLayout
 {
 public:
-	IVulkanPipelineLayout();
+	VulkanPipelineLayout();
 	virtual void CreatePipelineLayout();
 	virtual void DestroyPipelineLayout();
 

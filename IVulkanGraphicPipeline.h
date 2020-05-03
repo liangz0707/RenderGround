@@ -15,7 +15,10 @@ public:
 
 	virtual void createGraphicsPipeline(
 		VkShaderModule vertShaderModule,
-		VkShaderModule fragShaderModule);
+		VkShaderModule fragShaderModule,
+		int subpass,
+		VkRenderPass,
+		VkPipelineLayout);
 
 	virtual void destroyGraphicPipeline();
 

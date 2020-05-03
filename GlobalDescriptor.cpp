@@ -7,16 +7,10 @@ void GlobalDescriptor::createDescriptorPool()
 
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
-	std::array<VkDescriptorPoolSize, 3> poolSizes = {};
+	std::array<VkDescriptorPoolSize, 1> poolSizes = {};
 
-	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	poolSizes[0].descriptorCount = static_cast<uint32_t>(1 * 10);
-
-	poolSizes[1].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-	poolSizes[1].descriptorCount = static_cast<uint32_t>(1 * 10);
-
-	poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[2].descriptorCount = static_cast<uint32_t>(1 * 10);
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -32,9 +26,19 @@ void GlobalDescriptor::createDescriptorPool()
 
 void GlobalDescriptor::createDescriptorSetLayout() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t layoutsSize = RM->GetSwapChain()->GetSwapChainImageSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
-	std::vector<VkDescriptorSetLayoutBinding> bindings;
+
+
+	VkDescriptorSetLayoutBinding globalBinding = {};
+	globalBinding.binding = 0;
+	globalBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	globalBinding.descriptorCount = 1;
+	globalBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+
+	std::array<VkDescriptorSetLayoutBinding, 1> bindings = {
+		globalBinding
+	};
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

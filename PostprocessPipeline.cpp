@@ -4,7 +4,10 @@
 
 void PostprocessPipeline::createGraphicsPipeline(
 	VkShaderModule vertShaderModule,
-	VkShaderModule fragShaderModule)
+	VkShaderModule fragShaderModule,
+	int subpass,
+	VkRenderPass renderpass,
+	VkPipelineLayout layout)
 {
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
 	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -145,13 +148,9 @@ void PostprocessPipeline::createGraphicsPipeline(
 	pipelineInfo.pDepthStencilState = &depthStencil; // Optional
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = nullptr; // Optional
-	pipelineInfo.layout =  RenderingResourceLocater::get_layout()->GetInstance();
-
-	//接下来需要索引我们创建的RenderPass。
-	//然后指定这个GraphicsPipeline是哪个suboass使用的。
-
-	pipelineInfo.renderPass = RenderingResourceLocater::get_pass_deferred()->GetInstance();;
-	pipelineInfo.subpass = 3;
+	pipelineInfo.layout = layout;
+	pipelineInfo.renderPass = renderpass;
+	pipelineInfo.subpass = subpass;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
 

@@ -6,39 +6,53 @@ void PostDescriptor::createDescriptorPool()
 
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
-	std::array<VkDescriptorPoolSize, 3> poolSizes = {};
+	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 
-	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(1 * 10);
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(1);
 
-	poolSizes[1].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-	poolSizes[1].descriptorCount = static_cast<uint32_t>(1 * 10);
 
-	poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[2].descriptorCount = static_cast<uint32_t>(1 * 10);
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(1);
 
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32_t>(111);
+	poolInfo.maxSets = static_cast<uint32_t>(1);
 
 	if (vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &pool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }
 
-
 void PostDescriptor::createDescriptorSetLayout() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	size_t layoutsSize = RM->GetSwapChain()->GetSwapChainImageSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
-	std::vector<VkDescriptorSetLayoutBinding> bindings;
+
+	VkDescriptorSetLayoutBinding postBinding = {};
+	postBinding.binding = 0;
+	postBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	postBinding.descriptorCount = 1;
+	postBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkDescriptorSetLayoutBinding postInputBinding = {};
+	postBinding.binding = 1;
+	postBinding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	postBinding.descriptorCount = 1;
+	postBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	std::array<VkDescriptorSetLayoutBinding, 2> bindings = {
+		postBinding,
+		postInputBinding
+	};
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 	layoutInfo.pBindings = bindings.data();
+
 
 	if (vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &setLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout!");

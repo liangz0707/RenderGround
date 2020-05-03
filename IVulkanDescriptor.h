@@ -16,6 +16,15 @@ public:
 	virtual void createDescriptorSetLayout() = 0;
 	virtual void destroyDescriptorSetLayout();
 
+	virtual VkDescriptorSetLayout getSetLayout() {
+		return setLayout;
+	}
+
+	virtual VkDescriptorPool getPool()
+	{
+		return pool;
+	}
+
 
 protected:
 	VkDescriptorPool pool;

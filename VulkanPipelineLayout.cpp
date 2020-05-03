@@ -1,10 +1,10 @@
 #include "VulkanPipelineLayout.h"
 
-IVulkanPipelineLayout::IVulkanPipelineLayout()
+VulkanPipelineLayout::VulkanPipelineLayout()
 {
 }
 
-void IVulkanPipelineLayout::CreatePipelineLayout()
+void VulkanPipelineLayout::CreatePipelineLayout()
 {
 	int layoutCount = 3;
 	VkDescriptorSetLayout setLayout[] = {
@@ -26,7 +26,7 @@ void IVulkanPipelineLayout::CreatePipelineLayout()
 	RM->createPipelineLayout(&pipelineLayoutInfo, &vkPipelineLayout);
 }
 
-void IVulkanPipelineLayout::DestroyPipelineLayout()
+void VulkanPipelineLayout::DestroyPipelineLayout()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
@@ -34,7 +34,7 @@ void IVulkanPipelineLayout::DestroyPipelineLayout()
 }
 
 
-void IVulkanPipelineLayout::createUniformDescriptorPool() {
+void VulkanPipelineLayout::createUniformDescriptorPool() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	size_t layoutsSize = RM->GetSwapChain()->GetSwapChainImageSize();
@@ -56,14 +56,14 @@ void IVulkanPipelineLayout::createUniformDescriptorPool() {
 	}
 }
 
-void IVulkanPipelineLayout::destroyUniformDescriptorPool() {
+void VulkanPipelineLayout::destroyUniformDescriptorPool() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 	vkDestroyDescriptorPool(vkDevice, uniformDescriptorPool, nullptr);
 }
 
-void IVulkanPipelineLayout::createGbufferDescriptorSetLayout()
+void VulkanPipelineLayout::createGbufferDescriptorSetLayout()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
@@ -109,7 +109,7 @@ void IVulkanPipelineLayout::createGbufferDescriptorSetLayout()
 	}
 }
 
-void IVulkanPipelineLayout::destroyGbufferDescriptorSetLayout()
+void VulkanPipelineLayout::destroyGbufferDescriptorSetLayout()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
@@ -117,7 +117,7 @@ void IVulkanPipelineLayout::destroyGbufferDescriptorSetLayout()
 	vkDestroyDescriptorSetLayout(vkDevice, gbufferDescriptorSetLayout, nullptr);
 }
 
-void IVulkanPipelineLayout::createGbufferDescriptorPool()
+void VulkanPipelineLayout::createGbufferDescriptorPool()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 
@@ -140,7 +140,7 @@ void IVulkanPipelineLayout::createGbufferDescriptorPool()
 
 }
 
-void IVulkanPipelineLayout::destroyGbufferDescriptorPool()
+void VulkanPipelineLayout::destroyGbufferDescriptorPool()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
@@ -148,7 +148,7 @@ void IVulkanPipelineLayout::destroyGbufferDescriptorPool()
 }
 
 
-void IVulkanPipelineLayout::createUniformDescriptorSetLayout() {
+void VulkanPipelineLayout::createUniformDescriptorSetLayout() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
@@ -172,14 +172,14 @@ void IVulkanPipelineLayout::createUniformDescriptorSetLayout() {
 	}
 }
 
-void IVulkanPipelineLayout::destroyUniformDescriptorSetLayout() {
+void VulkanPipelineLayout::destroyUniformDescriptorSetLayout() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
 	vkDestroyDescriptorSetLayout(vkDevice, uniformDescriptorSetLayout, nullptr);
 }
 
-void IVulkanPipelineLayout::createObjectDescriptorPool() {
+void VulkanPipelineLayout::createObjectDescriptorPool() {
 
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	size_t MAX_OBJ_NUMBER = 10;
@@ -204,14 +204,14 @@ void IVulkanPipelineLayout::createObjectDescriptorPool() {
 	}
 }
 
-void IVulkanPipelineLayout::destroyObjectDescriptorPool()
+void VulkanPipelineLayout::destroyObjectDescriptorPool()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 	vkDestroyDescriptorPool(vkDevice, entityUniformDescriptorPool, nullptr);
 }
 
-void IVulkanPipelineLayout::createObjectDescriptorSetLayout() {
+void VulkanPipelineLayout::createObjectDescriptorSetLayout() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	size_t layoutsSize = RM->GetSwapChain()->GetSwapChainImageSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
@@ -242,14 +242,14 @@ void IVulkanPipelineLayout::createObjectDescriptorSetLayout() {
 	}
 }
 
-void IVulkanPipelineLayout::destroyObjectDescriptorSetLayout()
+void VulkanPipelineLayout::destroyObjectDescriptorSetLayout()
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 	vkDestroyDescriptorSetLayout(vkDevice, entityUniformDescriptorSetLayout, nullptr);
 }
 
-VkDescriptorSet IVulkanPipelineLayout::createObjectDescriptorSet(
+VkDescriptorSet VulkanPipelineLayout::createObjectDescriptorSet(
 	VkBuffer preEntityUniformBuffer,
 	VkSampler vkTextureSampler,
 	VkImageView vkTextureImageView)
