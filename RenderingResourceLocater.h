@@ -21,6 +21,7 @@
 #include "PostDescriptor.h"
 #include "ForwardLightingDescriptor.h"
 #include "IVulkanPipelineLayout.h"
+#include "ScreenDescriptor.h"
 
 class DeferredGeomtryPipeline;
 class ForwardPipeline;
@@ -47,6 +48,7 @@ public:
     static IVulkanRenderPass* get_pass_default() { return pass_default; }
 
     static IVulkanDescriptor* get_descriptor_batch() { return descriptor_batch; }
+    static IVulkanDescriptor* get_descriptor_screen() { return descriptor_screen; }
     static IVulkanDescriptor* get_descriptor_post() { return descriptor_post; }
     static IVulkanDescriptor* get_descriptor_global() { return descriptor_global; }
     static IVulkanDescriptor* get_descriptor_forward() { return descriptor_forward; }
@@ -151,12 +153,18 @@ public:
         descriptor_post = service;
     }
 
+    static void provide(ScreenDescriptor* service)
+    {
+        descriptor_screen = service;
+    }
+
 private:
     static BatchDescriptor* descriptor_batch;
     static PostDescriptor* descriptor_post;
     static ForwardLightingDescriptor* descriptor_forward;
     static DeferredLightingDescriptor* descriptor_deferred;
     static GlobalDescriptor* descriptor_global;
+    static ScreenDescriptor* descriptor_screen;
 
     static IVulkanPipelineLayout* pipeline_layouts_deferred; 
 
@@ -165,6 +173,7 @@ private:
     static IVulkanGraphicPipeline* pipeline_deferred_geometry;
     static IVulkanGraphicPipeline* pipeline_deferred_lighting;
     static IVulkanGraphicPipeline* pipeline_to_screen;
+
     
     static IVulkanRenderPass* pass_deferred;
     static IVulkanRenderPass* pass_forward;

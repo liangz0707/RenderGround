@@ -9,17 +9,17 @@ void PostDescriptor::createDescriptorPool()
 	std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(1);
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(3);
 
-
+	
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	poolSizes[1].descriptorCount = static_cast<uint32_t>(1);
-
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(3);
+	
 	VkDescriptorPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32_t>(1);
+	poolInfo.maxSets = static_cast<uint32_t>(3);
 
 	if (vkCreateDescriptorPool(vkDevice, &poolInfo, nullptr, &pool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
@@ -28,7 +28,6 @@ void PostDescriptor::createDescriptorPool()
 
 void PostDescriptor::createDescriptorSetLayout() {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
-	size_t layoutsSize = RM->GetSwapChain()->GetSwapChainImageSize();
 	VkDevice vkDevice = RM->GetDevice()->GetInstance();
 
 	VkDescriptorSetLayoutBinding postBinding = {};
@@ -38,12 +37,13 @@ void PostDescriptor::createDescriptorSetLayout() {
 	postBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	VkDescriptorSetLayoutBinding postInputBinding = {};
-	postBinding.binding = 1;
-	postBinding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	postBinding.descriptorCount = 1;
-	postBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	postInputBinding.binding = 1;
+	postInputBinding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	postInputBinding.descriptorCount = 1;
+	postInputBinding.pImmutableSamplers = nullptr;
+	postInputBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	std::array<VkDescriptorSetLayoutBinding, 2> bindings = {
+	std::array<VkDescriptorSetLayoutBinding,2> bindings = {
 		postBinding,
 		postInputBinding
 	};

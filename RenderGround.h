@@ -19,6 +19,18 @@
 #include "VulkanShaders.h"
 #include "VulkanDeferredRendering.h"
 
+#include "DeferredLightingMaterial.h"
+#include "ForwardLightingMaterial.h"
+#include "GlobalMaterial.h"
+#include "PostMaterial.h"
+#include "BasePBRMaterial.h"
+
+class DeferredLightingMaterial;
+class ForwardLightingMaterial;
+class GlobalMaterial;
+class PostMaterial;
+class BasePBRMaterial;
+
 class VulkanSync;
 class VulkanTestRendering;
 class IVulkanRenderPass;

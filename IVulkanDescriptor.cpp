@@ -30,6 +30,10 @@ VkDescriptorSet IVulkanDescriptor::allocDescriptorSet(std::vector< VkWriteDescri
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
 
+	for (size_t i = 0; i < dw.size(); i++) {
+		dw[i].dstSet = vkDescriptorSet;
+	}
+
 	vkUpdateDescriptorSets(vkDevice, static_cast<uint32_t>(dw.size()), dw
 		.data(), 0, nullptr);
 

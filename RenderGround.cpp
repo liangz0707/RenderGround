@@ -5,6 +5,7 @@
 #include "VulkanShaders.h"
 #include "RenderingSettingLocater.h"
 #include "DeferredPipelineLayouts.h"
+#include "ScreenMaterial.h"
 
 VulkanRenderGround::VulkanRenderGround()
 {
@@ -58,11 +59,16 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 	forwardDescriptor->createDescriptorPool();
 	forwardDescriptor->createDescriptorSetLayout();
 
+	ScreenDescriptor* screenDescriptor = new ScreenDescriptor();
+	screenDescriptor->createDescriptorPool();
+	screenDescriptor->createDescriptorSetLayout();
+
 	RenderingResourceLocater::provide(batchDescriptor);
 	RenderingResourceLocater::provide(postDescriptor);
 	RenderingResourceLocater::provide(deferredDescriptor);
 	RenderingResourceLocater::provide(globalDescriptor);
 	RenderingResourceLocater::provide(forwardDescriptor);
+	RenderingResourceLocater::provide(screenDescriptor);
 
 	/* ===================== Create Layout ===================== */
 
@@ -153,7 +159,7 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 		toScreenShader->GetFragmentShader(),
 		4,
 		deferredPass->GetInstance(),
-		layout->GetInstance());
+		RenderingResourceLocater::get_pipeline_layouts_deferred()->GetPipelineLayoutByIndex(4));
 
 	RenderingResourceLocater::provide(dgp);
 	RenderingResourceLocater::provide(dlp);
@@ -161,20 +167,6 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 	RenderingResourceLocater::provide(pp);
 	RenderingResourceLocater::provide(tos);
 
-	/* ===================== Load Assets ===================== */
-
-	VulkanModel* vulkanModel = new VulkanModel();
-	VulkanTexture* vulkanTexture = new VulkanTexture();
-
-	vulkanSceneManager = new VulkanSceneManager();
-	RenderingResourceLocater::provide(vulkanSceneManager);
-
-	vulkanSceneManager->loadTexture(vulkanTexture);
-
-	VulkanRModel* model = vulkanSceneManager->loadRenderModel(vulkanModel);
-	VulkanMaterial * material = vulkanSceneManager->loadMaterial();
-	model->SetMaterial(material);
-	
 
 	/* ===================== Create FrameBuffer ===================== */
 	VulkanFramebuffer* vulkanFrameBuffer = new VulkanFramebuffer();
@@ -182,6 +174,56 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 	vulkanFrameBuffer->createDeferredColorBufferResource();
 	vulkanFrameBuffer->createDeferredFrameBuffer(RenderingResourceLocater::get_pass_deferred());
 	RM->SetFramebuffer(vulkanFrameBuffer);
+
+	/* ===================== Load Global Assets ===================== */
+
+	vulkanSceneManager = new VulkanSceneManager();
+	RenderingResourceLocater::provide(vulkanSceneManager);
+
+	DeferredLightingMaterial* dm = new DeferredLightingMaterial();
+	ForwardLightingMaterial* fm = new ForwardLightingMaterial();
+	PostMaterial* pm = new PostMaterial();
+	GlobalMaterial* gm = new GlobalMaterial();
+
+	ScreenMaterial* pm2 = new ScreenMaterial();
+	pm2->CreateDescriptorBuffer();
+	pm2->CreateDescriptorSet();
+
+	
+	dm->CreateDescriptorBuffer();
+	fm->CreateDescriptorBuffer();
+	pm->CreateDescriptorBuffer();
+	gm->CreateDescriptorBuffer();
+	
+	gm->CreateDescriptorSet();
+	pm->CreateDescriptorSet();
+	fm->CreateDescriptorSet();
+	dm->CreateDescriptorSet();
+
+	vulkanSceneManager->SetGlobalMaterial(gm);
+	vulkanSceneManager->SetForwardMaterial(fm);
+	vulkanSceneManager->SetPostMaterial(pm);
+	vulkanSceneManager->SetDeferredMaterial(dm);
+
+	RenderingResourceLocater::get_scene_manager()->GetDeferredMaterial()->UpdateDescriptorSet();
+	RenderingResourceLocater::get_scene_manager()->GetForwardMaterial()->UpdateDescriptorSet();
+	RenderingResourceLocater::get_scene_manager()->GetPostMaterial()->UpdateDescriptorSet();
+	RenderingResourceLocater::get_scene_manager()->GetGlobalMaterial()->UpdateDescriptorSet();
+
+	/* ===================== Load Object Assets ===================== */
+
+	VulkanModel* vulkanModel = new VulkanModel();
+	VulkanTexture* vulkanTexture = new VulkanTexture();
+
+
+	vulkanSceneManager->loadTexture(vulkanTexture);
+
+	VulkanRModel* model = vulkanSceneManager->loadRenderModel(vulkanModel);
+
+
+	VulkanMaterial* material = vulkanSceneManager->loadMaterial();
+	model->SetMaterial(material);
+
 
 	/* ===================== Create GlobalData ===================== */
 
@@ -319,7 +361,6 @@ void VulkanRenderGround::cleanup()
 
 	sampler->destroyTextureSampler();
 
-
 	vulkanSceneManager->unloadTextures();
 	vulkanSceneManager->unloadModels();
 	vulkanSceneManager->unloadMaterials();
@@ -381,6 +422,17 @@ void VulkanRenderGround::recreateSwapChain()
 	RenderingResourceLocater::get_descriptor_forward()->createDescriptorSetLayout();
 
 	RenderingResourceLocater::get_pipeline_layouts_deferred()->CreatePipelineLayout();
+
+	/* ===================== Create Material ================= */
+	RenderingResourceLocater::get_scene_manager()->GetDeferredMaterial()->CreateDescriptorSet();
+	RenderingResourceLocater::get_scene_manager()->GetForwardMaterial()->CreateDescriptorSet();
+	RenderingResourceLocater::get_scene_manager()->GetPostMaterial()->CreateDescriptorSet();
+	RenderingResourceLocater::get_scene_manager()->GetGlobalMaterial()->CreateDescriptorSet();
+
+	RenderingResourceLocater::get_scene_manager()->GetDeferredMaterial()->UpdateDescriptorSet();
+	RenderingResourceLocater::get_scene_manager()->GetForwardMaterial()->UpdateDescriptorSet();
+	RenderingResourceLocater::get_scene_manager()->GetPostMaterial()->UpdateDescriptorSet();
+	RenderingResourceLocater::get_scene_manager()->GetGlobalMaterial()->UpdateDescriptorSet();
 
 	/* ===================== Create Layout ===================== */
 

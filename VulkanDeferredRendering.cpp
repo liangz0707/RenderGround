@@ -88,6 +88,8 @@ void VulkanDeferredRendering::Render(VkCommandBuffer commandBuffer,
 
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 	vkCmdBindIndexBuffer(commandBuffer, vulkanModels[0]->GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+
 	vkCmdDraw(commandBuffer, static_cast<uint32_t>(4), 1, 0, 0);
 
 	//-----------------------
@@ -117,6 +119,25 @@ void VulkanDeferredRendering::Render(VkCommandBuffer commandBuffer,
 
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 	vkCmdBindIndexBuffer(commandBuffer, vulkanModels[0]->GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+	VkDescriptorSet descriptorSet[] = {
+			 RenderingResourceLocater::get_scene_manager()->GetPostMaterial()->GetDescriptorSet(),
+			 RenderingResourceLocater::get_scene_manager()->GetGlobalMaterial()->GetDescriptorSet()
+	};
+
+	int descriptorSetNumber = 2;
+	vkCmdBindDescriptorSets(
+		commandBuffer, 
+		VK_PIPELINE_BIND_POINT_GRAPHICS, 
+		RenderingResourceLocater::get_pipeline_layouts_deferred()->GetPipelineLayoutByIndex(4),
+		0, 
+		descriptorSetNumber, 
+		descriptorSet, 
+		0, 
+		nullptr);
+
+
+
 	vkCmdDraw(commandBuffer, static_cast<uint32_t>(4), 1, 0, 0);
 
 	vkCmdEndRenderPass(commandBuffer);

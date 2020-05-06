@@ -62,6 +62,23 @@ void VulkanSceneManager::unloadMaterials()
 	}
 }
 
+void VulkanSceneManager::unloadObjectMaterials()
+{
+	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
+	for (auto material : objectMaterials)
+	{
+		material->DestroyMaterial();
+	}
+}
+
+void VulkanSceneManager::unloadGlobalMaterials()
+{
+	postMaterial->DestroyMaterial();
+	globalMaterial->DestroyMaterial();
+	deferredMaterial->DestroyMaterial();
+	forwardMaterial->DestroyMaterial();
+}
+
 VulkanRModel* VulkanSceneManager::loadRenderModel(VulkanModel* vulkanModel)
 {
 	VulkanRModel* vulkanRModel = new VulkanRModel();

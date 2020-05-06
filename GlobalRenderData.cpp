@@ -144,6 +144,10 @@ GlobalRenderData::GlobalRenderData()
 {
 }
 
+void GlobalRenderData::CreateGlobalBuffer()
+{
+}
+
 void GlobalRenderData::createUniformBuffers(VkDeviceSize bufferSize)
 {
 	VulkanResourceManager* RM = VulkanResourceManager::GetResourceManager();
