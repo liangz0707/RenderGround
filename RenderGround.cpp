@@ -104,11 +104,7 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 	deferredPass = new DeferredRenderPass();
 	deferredPass->createRenderPass();
 
-	//forwardPass = new ForwardRenderPass();
-	//forwardPass->createRenderPass();
-
 	RenderingResourceLocater::provide(deferredPass);
-	RenderingResourceLocater::provide(forwardPass);
 
 	/* ===================== Create Shader ======================= */
 
@@ -127,7 +123,7 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 		deferredGeometryShader->GetFragmentShader(),
 		0,
 		deferredPass->GetInstance(),
-		layout->GetInstance());
+		deferredPipelineLayouts->GetPipelineLayoutByIndex(0));
 
 	DeferredLightingPipeline* dlp = new DeferredLightingPipeline();
 	dlp->createGraphicsPipeline(	
@@ -135,7 +131,7 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 		deferredLightingShader->GetFragmentShader(),
 		1,
 		deferredPass->GetInstance(),
-		layout->GetInstance());
+		deferredPipelineLayouts->GetPipelineLayoutByIndex(1));
 
 	ForwardPipeline* forw =			new ForwardPipeline();
 	forw->createGraphicsPipeline(	
@@ -143,7 +139,7 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 		forwardShader->GetFragmentShader(),
 		2,
 		deferredPass->GetInstance(),
-		layout->GetInstance());
+		deferredPipelineLayouts->GetPipelineLayoutByIndex(2));
 
 	PostprocessPipeline* pp =		new PostprocessPipeline();
 	pp->createGraphicsPipeline(		
@@ -151,7 +147,7 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 		postprocessShader->GetFragmentShader(),
 		3,
 		deferredPass->GetInstance(),
-		layout->GetInstance());
+		deferredPipelineLayouts->GetPipelineLayoutByIndex(3));
 
 	ToScreenPipeline* tos =			new ToScreenPipeline();
 	tos->createGraphicsPipeline(	
@@ -159,7 +155,7 @@ void VulkanRenderGround::init(HINSTANCE windowInstance, HWND window)
 		toScreenShader->GetFragmentShader(),
 		4,
 		deferredPass->GetInstance(),
-		RenderingResourceLocater::get_pipeline_layouts_deferred()->GetPipelineLayoutByIndex(4));
+		deferredPipelineLayouts->GetPipelineLayoutByIndex(4));
 
 	RenderingResourceLocater::provide(dgp);
 	RenderingResourceLocater::provide(dlp);

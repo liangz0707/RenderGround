@@ -33,7 +33,7 @@ void GlobalDescriptor::createDescriptorSetLayout() {
 	globalBinding.binding = 0;
 	globalBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	globalBinding.descriptorCount = 1;
-	globalBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	globalBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT|VK_SHADER_STAGE_VERTEX_BIT;
 
 
 	std::array<VkDescriptorSetLayoutBinding, 1> bindings = {

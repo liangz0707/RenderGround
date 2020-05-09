@@ -42,7 +42,7 @@ void BatchDescriptor::createDescriptorSetLayout() {
 	batchlBinding.binding = 0;
 	batchlBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	batchlBinding.descriptorCount = 1;
-	batchlBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	batchlBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT|VK_SHADER_STAGE_VERTEX_BIT;
 
 	std::array<VkDescriptorSetLayoutBinding, 1> bindings = {
 		batchlBinding

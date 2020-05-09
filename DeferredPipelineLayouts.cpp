@@ -56,10 +56,11 @@ void DeferredPipelineLayouts::CreatePipelineLayout()
 
 	/*Forward Lighting*/
 	VkPipelineLayout vkPipelineLayout_ForwardLighting;
-	int forwardLayoutsCount = 2;
-	VkDescriptorSetLayout forwardLayouts[2] =
+	int forwardLayoutsCount = 3;
+	VkDescriptorSetLayout forwardLayouts[3] =
 	{
 		forward,
+		batch,
 		global
 	};
 

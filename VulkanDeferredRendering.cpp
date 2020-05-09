@@ -56,8 +56,9 @@ void VulkanDeferredRendering::Render(VkCommandBuffer commandBuffer,
 	// 绑定其中的一个subpass的graphicsPipeline的状态。
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, RenderingResourceLocater::get_pipeline_deferred_geometry()->GetInstance());
 
+	
 	std::vector<VulkanRModel*> vulkanModels = RenderingResourceLocater::get_scene_manager()->GetStaticModel();
-	for (VulkanRModel* staticModel : vulkanModels)
+	/*for (VulkanRModel* staticModel : vulkanModels)
 	{
 		VkBuffer vertexBuffers[] = { staticModel->GetVertexBuffer() };
 		VkDeviceSize offsets[] = { 0 };
@@ -67,16 +68,15 @@ void VulkanDeferredRendering::Render(VkCommandBuffer commandBuffer,
 
 		// TODO:需要从模型当中取出来。
 		VkDescriptorSet descriptorSet[] = {
-				RenderingResourceLocater::get_global_render_data()->getUniformDescriptorSet(i),
 				 staticModel->GetMaterial()->GetDescriptorSet(),
 				RenderingResourceLocater::get_global_render_data()->getGbufferDescriptorSet() };
-		int descriptorSetNumber = 3;
+		int descriptorSetNumber = 2;
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, RenderingResourceLocater::get_layout()->GetInstance(), 0, descriptorSetNumber, descriptorSet, 0, nullptr);
 
 		vkCmdDraw(commandBuffer, static_cast<uint32_t>(4), 1, 0, 0);
 		//vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(staticModel->GetIndexSize()), 1, 0, 0, 0);
 
-	}
+	}*/
 
 	//-----------------------
 	vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
@@ -89,18 +89,51 @@ void VulkanDeferredRendering::Render(VkCommandBuffer commandBuffer,
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 	vkCmdBindIndexBuffer(commandBuffer, vulkanModels[0]->GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
+	VkDescriptorSet deferredLightingDescriptorSet[] = {
+			 RenderingResourceLocater::get_scene_manager()->GetDeferredMaterial()->GetDescriptorSet(),
+			 RenderingResourceLocater::get_scene_manager()->GetGlobalMaterial()->GetDescriptorSet()
+	};
 
+	int deferredLightingDescriptorSetNumber = 2;
+	vkCmdBindDescriptorSets(
+		commandBuffer,
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		RenderingResourceLocater::get_pipeline_layouts_deferred()->GetPipelineLayoutByIndex(1),
+		0,
+		deferredLightingDescriptorSetNumber,
+		deferredLightingDescriptorSet,
+		0,
+		nullptr);
 	vkCmdDraw(commandBuffer, static_cast<uint32_t>(4), 1, 0, 0);
 
 	//-----------------------
+	
 	vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, RenderingResourceLocater::get_pipeline_forward()->GetInstance());
 
-
+	/*
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 	vkCmdBindIndexBuffer(commandBuffer, vulkanModels[0]->GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+	VkDescriptorSet forwardDescriptorSet[] = {
+			 RenderingResourceLocater::get_scene_manager()->GetForwardMaterial()->GetDescriptorSet(),
+			 RenderingResourceLocater::get_scene_manager()->GetGlobalMaterial()->GetDescriptorSet()
+	};
+
+	int forwardDescriptorSetNumber = 2;
+	vkCmdBindDescriptorSets(
+		commandBuffer,
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		RenderingResourceLocater::get_pipeline_layouts_deferred()->GetPipelineLayoutByIndex(2),
+		0,
+		forwardDescriptorSetNumber,
+		forwardDescriptorSet,
+		0,
+		nullptr);
+	
 	vkCmdDraw(commandBuffer, static_cast<uint32_t>(4), 1, 0, 0);
+	*/
 	//-----------------------
 	vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -109,6 +142,23 @@ void VulkanDeferredRendering::Render(VkCommandBuffer commandBuffer,
 
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 	vkCmdBindIndexBuffer(commandBuffer, vulkanModels[0]->GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+	VkDescriptorSet postDescriptorSet[] = {
+			 RenderingResourceLocater::get_scene_manager()->GetPostMaterial()->GetDescriptorSet(),
+			 RenderingResourceLocater::get_scene_manager()->GetGlobalMaterial()->GetDescriptorSet()
+	};
+
+	int postDescriptorSetNumber = 2;
+	vkCmdBindDescriptorSets(
+		commandBuffer,
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		RenderingResourceLocater::get_pipeline_layouts_deferred()->GetPipelineLayoutByIndex(3),
+		0,
+		postDescriptorSetNumber,
+		postDescriptorSet,
+		0,
+		nullptr);
+
 	vkCmdDraw(commandBuffer, static_cast<uint32_t>(4), 1, 0, 0);
 
 	//-----------------------
@@ -116,27 +166,8 @@ void VulkanDeferredRendering::Render(VkCommandBuffer commandBuffer,
 
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, RenderingResourceLocater::get_pipeline_to_screen()->GetInstance());
 
-
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 	vkCmdBindIndexBuffer(commandBuffer, vulkanModels[0]->GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
-
-	VkDescriptorSet descriptorSet[] = {
-			 RenderingResourceLocater::get_scene_manager()->GetPostMaterial()->GetDescriptorSet(),
-			 RenderingResourceLocater::get_scene_manager()->GetGlobalMaterial()->GetDescriptorSet()
-	};
-
-	int descriptorSetNumber = 2;
-	vkCmdBindDescriptorSets(
-		commandBuffer, 
-		VK_PIPELINE_BIND_POINT_GRAPHICS, 
-		RenderingResourceLocater::get_pipeline_layouts_deferred()->GetPipelineLayoutByIndex(4),
-		0, 
-		descriptorSetNumber, 
-		descriptorSet, 
-		0, 
-		nullptr);
-
-
 
 	vkCmdDraw(commandBuffer, static_cast<uint32_t>(4), 1, 0, 0);
 
